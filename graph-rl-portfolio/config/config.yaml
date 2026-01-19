@@ -1,6 +1,0 @@
-# config/config.yaml
-data:
-  start_date: "2015-01-01"
-  end_date: "2023-01-01"
-  [cite_start]ticker_list: ["AAPL", "MSFT", "GOOG", "AMZN", "NVDA"] # Add more S&P 100 tickers here [cite: 230]
-  window_size: 63 # 3 months rolling window for normalization
