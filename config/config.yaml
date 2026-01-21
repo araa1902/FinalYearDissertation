@@ -1,6 +1,64 @@
 # config/config.yaml
 data:
-  start_date: "2015-01-01"
-  end_date: "2023-01-01"
-  [cite_start]ticker_list: ["AAPL", "MSFT", "GOOG", "AMZN", "NVDA"] # Add more S&P 100 tickers here [cite: 230]
-  window_size: 63 # 3 months rolling window for normalization
+  start_date: "2016-01-01"
+  end_date: "2022-12-31"
+  ticker_list:
+    # Technology (High Volatility / Growth)
+    - "AAPL"
+    - "MSFT"
+    - "NVDA"
+
+    # Financials (Interest Rate Sensitive)
+    - "JPM"
+    - "GS"
+
+    # Healthcare (Defensive)
+    - "JNJ"
+    - "PFE"
+
+    # Consumer Staples (Low Volatility)
+    - "WMT"
+    - "KO"
+
+    # Energy (Commodity / Macro Sensitive)
+    - "XOM"
+    - "CVX"
+
+    # Industrials (Macro Cyclical)
+    - "CAT"
+
+preprocessing:
+  normalisation_window: 63 # 3 months rolling window for normalisation
+  use_technical_indicators: true
+  tech_indicator_list:
+    - "macd"
+    - "rsi"
+    - "cci"
+    - "dx"
+  use_turbulence: False
+
+graph:
+  lookback: 30 # Graph Lookback Window
+  sparsity_method: "threshold" # Options: 'threshold' or 'knn'
+  threshold: 0.3 # Correlation threshold for edge creation
+  top_k: 10 # Top-k connections per node (if using knn method)
+
+env:
+  initial_amount: 1000000
+  transaction_cost_pct: 0.001 # 0.1% cost per trade
+  reward_scaling: 1.0
+  hmax: 100 # Max shares to trade per step
+  turbulence_threshold: null # Set to null or a numeric value
+
+ppo:
+  learning_rate: 0.0001 # Adjusted learning rate for stability
+  n_steps: 2048 # Increased number of steps per update
+  batch_size: 64 # Standard batch size for PPO
+  gamma: 0.99 # Discount factor
+  gae_lambda: 0.95 # GAE parameter
+  clip_range: 0.2 # Clipping range for PPO
+  ent_coef: 0.005 # Entropy coefficient
+  total_timesteps: 300000 # Total training timesteps
+  eval_freq: 5000 # Evaluation frequency
+  best_model_path: "./models/best_model/"
+  log_path: "./results/eval_logs/"

@@ -33,6 +33,11 @@ class YahooDataDownloader:
 
         if data.empty:
             raise ValueError("No data downloaded")
+        
+        data = data.ffill()
+        data = data.dropna()
+        if len(data) == 0:
+            raise ValueError("Data contains only NaNs after forward fill")
 
         data = data.stack(level=0).rename_axis(['date', 'ticker']).reset_index()
         data.columns = [c.lower() for c in data.columns] 

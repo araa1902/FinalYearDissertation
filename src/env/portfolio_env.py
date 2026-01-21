@@ -1,3 +1,5 @@
+# This code is adapted based on Stable Baselines3 PPO implementation. Due to the nature of our research, we have modified the environment to incorporate graph structures and portfolio management specifics.
+# Link: https://stable-baselines3.readthedocs.io/en/master/modules/ppo.html
 import numpy as np
 import pandas as pd
 import gym
@@ -11,7 +13,7 @@ class StockPortfolioEnv(gym.Env):
 
     def __init__(self,
                 df,
-                graph_dict, # <--- NEW: Accept the dictionary directly
+                graph_dict,
                 stock_dim,
                 hmax,
                 initial_amount,
@@ -59,30 +61,26 @@ class StockPortfolioEnv(gym.Env):
         self.state = self._get_state(self.data, self.current_date_str)
         self.date_memory = [self.current_date_str]
 
-    def _get_daily_data(self, day_index):
+    def _get_daily_data(self, day_index : int):
         """Helper to get all ticker data for a specific calendar day."""
         if day_index >= len(self.unique_dates):
             # End of data
             return None, None
             
         date = self.unique_dates[day_index]
-        # Filter DF for this date (Gets N rows, one per ticker)
         day_data = self.df[self.df['date'] == date].sort_values('ticker')
         return day_data, date
 
-    def _get_state(self, day_data, date):
+    def _get_state(self, day_data : pd.DataFrame, date: str) -> np.ndarray:
         """Constructs the state matrix: Graph + Features"""
-        # 1. Get the Graph (Adjacency Matrix) from the Dictionary
-        # If date is missing in graph_dict (e.g. early lookback period), use Identity matrix
         covs = self.graph_dict.get(date, np.eye(self.stock_dim))
         
-        # 2. Get Technical Features [N_features, N_stocks]
-        # We assume day_data is sorted by ticker, same as the graph/action space
+        #Get Technical Features [N_features, N_stocks]
         tech_features = []
         for tech in self.tech_indicator_list:
             tech_features.append(day_data[tech].values.tolist())
             
-        # 3. Stack them: Top rows = Graph, Bottom rows = Features
+        #Stack them: Top rows = Graph, Bottom rows = Features
         state = np.vstack((covs, np.array(tech_features)))
         return state
 
@@ -90,7 +88,6 @@ class StockPortfolioEnv(gym.Env):
         self.terminal = self.day >= len(self.unique_dates) - 1
 
         if self.terminal:
-            # --- VISUALISATION & LOGGING (Kept mostly same as your code) ---
             df_result = pd.DataFrame(self.portfolio_return_memory)
             df_result.columns = ['daily_return']
             plt.plot(df_result.daily_return.cumsum(), 'r')
@@ -110,9 +107,12 @@ class StockPortfolioEnv(gym.Env):
             exp_values = np.exp(actions - np.max(actions))
             weights = exp_values / np.sum(exp_values)
             
-            # Truncation
             weights[weights < 0.01] = 0.0
-            weights /= np.sum(weights)
+            w_sum = np.sum(weights)
+            if w_sum > 0:
+                weights /= w_sum
+            else:
+                weights = np.ones_like(weights) / self.stock_dim
             
             # Calculate Transaction Costs
             prev_weights = self.actions_memory[-1]
