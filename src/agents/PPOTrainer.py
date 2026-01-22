@@ -3,7 +3,7 @@ import os
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import DummyVecEnv
 from stable_baselines3.common.callbacks import EvalCallback
-from src.env.portfolio_env import StockPortfolioEnv
+from ..env.portfolio_env import StockPortfolioEnv
 
 class PPOTrainer:
     def __init__(self, env: StockPortfolioEnv, config: dict):

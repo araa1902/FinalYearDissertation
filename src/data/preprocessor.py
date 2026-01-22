@@ -31,7 +31,7 @@ class FeatureEngineer:
         return df
 
     def add_technical_indicators(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Adds technical indicators (MACD, RSI, CCI, DX) per ticker."""
+        """Adds technical indicators (MACD, RSI, CCI, DX, bollinger bands) per ticker."""
         processed_dfs = []
         # Groupby preserves the index, so we concat at the end
         for _, group in df.groupby('ticker'):
@@ -48,12 +48,17 @@ class FeatureEngineer:
                 group['cci'] = ta.trend.cci(group['high'], group['low'], group['close'], fillna=True)
             if 'dx' in self.tech_indicator_list:
                 group['dx'] = ta.trend.adx(group['high'], group['low'], group['close'], fillna=True)
+            if 'boll_ub' in self.tech_indicator_list and 'boll_lb' in self.tech_indicator_list:
+                bollinger = ta.volatility.BollingerBands(group['close'], fillna=True)
+                group['boll_ub'] = bollinger.bollinger_hband()
+                group['boll_lb'] = bollinger.bollinger_lband()
             processed_dfs.append(group)
         
         return pd.concat(processed_dfs)
 
     def apply_rolling_normalisation(self, df : pd.DataFrame, cols: list) -> pd.DataFrame:
-        """Applies Z-Score normalisation using trailing windows [t-Tw, t-1]."""
+        """Applies Z-Score normalisation using trailing windows [t-Tw, t-1]. This is integral to avoid lookahead bias
+        to maintain a realistic trading simulation."""
         for col in cols:
             df[col] = df.groupby('ticker')[col].transform(lambda x: (x - x.rolling(self.normalisation_window).mean().shift(1)) / (x.rolling(self.normalisation_window).std().shift(1) + 1e-8))
         return df

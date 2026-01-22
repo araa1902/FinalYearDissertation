@@ -35,19 +35,21 @@ preprocessing:
     - "rsi"
     - "cci"
     - "dx"
+    - "boll_ub"
+    - "boll_lb"
   use_turbulence: False
 
 graph:
   lookback: 30 # Graph Lookback Window
   sparsity_method: "threshold" # Options: 'threshold' or 'knn'
   threshold: 0.3 # Correlation threshold for edge creation
-  top_k: 10 # Top-k connections per node (if using knn method)
+  top_k: 4 # Top-k connections per node (if using knn method)
 
 env:
   initial_amount: 1000000
   transaction_cost_pct: 0.001 # 0.1% cost per trade
   reward_scaling: 1.0
-  hmax: 100 # Max shares to trade per step
+  hmax: 500 # Max shares to trade per step
   turbulence_threshold: null # Set to null or a numeric value
 
 ppo:

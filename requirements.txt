@@ -13,6 +13,7 @@ pandas
 numpy
 scikit-learn
 yfinance
+ta
 
 # Explainability & Viz
 shap

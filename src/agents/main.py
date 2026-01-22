@@ -1,8 +1,8 @@
-from src.data.downloader import YahooDataDownloader
-from src.data.preprocessor import FeatureEngineer
-from src.data.graphbuilder import GraphBuilder
-from src.env.portfolio_env import StockPortfolioEnv
-from src.agents.PPOTrainer import PPOTrainer
+from ..data.downloader import YahooDataDownloader
+from ..data.preprocessor import FeatureEngineer
+from ..data.graphbuilder import GraphBuilder
+from ..env.portfolio_env import StockPortfolioEnv
+from .PPOTrainer import PPOTrainer
 import yaml
 
 def load_config():
@@ -11,12 +11,11 @@ def load_config():
 
 def main():
     config = load_config()
-    
-    # Extract config sections
     data_config = config['data']
     preproc_config = config['preprocessing']
     graph_config = config['graph']
     env_config = config['env']
+    config_ppo = config['ppo']
     
     print("=== Data Ingestion & Preprocessing ===")
     downloader = YahooDataDownloader(
@@ -62,9 +61,12 @@ def main():
     }
 
     env = StockPortfolioEnv(df=df_train, **env_kwargs)
-    trainer = PPOTrainer(env, config)
+    trainer = PPOTrainer(env, config_ppo)
     trainer.train()
     trainer.save("models/baseline_ppo")
+    
+    # Save final results with graphs and metrics
+    env.save_final_results()
 
 if __name__ == "__main__":
     main()
