@@ -16,7 +16,7 @@ def main():
     graph_config = config['graph']
     env_config = config['env']
     config_ppo = config['ppo']
-    
+
     print("=== Data Ingestion & Preprocessing ===")
     downloader = YahooDataDownloader(
         start_date=data_config['start_date'], 

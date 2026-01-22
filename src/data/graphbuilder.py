@@ -1,7 +1,5 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 class GraphBuilder:
     def __init__(self, df: pd.DataFrame, lookback_window: int, threshold: float = 0.3, top_k: int = 10):
@@ -10,18 +8,6 @@ class GraphBuilder:
         self.threshold = threshold
         self.unique_tickers, self.unique_dates = self.df['ticker'].unique().tolist(), sorted(self.df['date'].unique().tolist())
         self.top_k = top_k
-        self.METRICS = [
-            'close',
-            'macd',          # Moving Average Convergence Divergence
-            'rsi',           # Relative Strength Index
-            'cci',           # Commodity Channel Index
-            'dx',            # Directional Movement Index
-            'log_return',
-            'open',
-            'high',
-            'low',
-            'volume'
-        ]
 
     def get_wide_returns(self) -> pd.DataFrame:
             '''
@@ -48,10 +34,10 @@ class GraphBuilder:
                 partition_index = np.argpartition(abs_corr, -self.top_k, axis=1)
                 mask, rows = np.zeros_like(corr_matrix, dtype=bool), np.arange(corr_matrix.shape[0])[:, None]
                 mask[rows, partition_index[:, -self.top_k:]] = True
-                adj_matrix = np.where(mask, corr_matrix, 0)
+                adj_matrix = np.where(mask, abs_corr, 0)
             else:
                 # Apply thresholding
-                adj_matrix = np.where((corr_matrix >= self.threshold) | (corr_matrix <= -self.threshold), corr_matrix, 0)
+                adj_matrix = np.where((corr_matrix >= self.threshold) | (corr_matrix <= -self.threshold), np.abs(corr_matrix), 0)
             
             graphs[self.unique_dates[i]] = adj_matrix
 

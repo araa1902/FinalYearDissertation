@@ -1,4 +1,4 @@
-# This environment is adapted based on Stable Baselines3 Portfolio Optimisation Environment implementation. Due to the nature of our research, we have modified the environment to incorporate graph structures and portfolio management specifics.
+# This environment is adapted based on Stable Baselines3 Portfolio Optimisation Environment implementation. Due to the nature of my research, I have modified the environment to incorporate graph structures and portfolio management specifics.
 # Link: https://stable-baselines3.readthedocs.io/en/master/modules/ppo.html
 import numpy as np
 import pandas as pd
@@ -136,7 +136,7 @@ class StockPortfolioEnv(gym.Env):
         
         metrics_df = pd.DataFrame([metrics_data])
         
-        # Append to CSV file (create if doesn't exist)
+        # Append to CSV file
         if os.path.exists(self.results_csv_path):
             metrics_df.to_csv(self.results_csv_path, mode='a', header=False, index=False)
         else:
@@ -260,9 +260,8 @@ class StockPortfolioEnv(gym.Env):
             plt.plot(ep_data['returns'], alpha=0.6, linewidth=1.5)
         
         # Add dates to x-axis
-        num_days = len(self.date_memory)
         x_ticks = np.linspace(0, len(self.all_episode_returns[0]['returns']) - 1, 10, dtype=int) if self.all_episode_returns else []
-        x_labels = [self.date_memory[min(i, len(self.date_memory) - 1)] for i in x_ticks]
+        x_labels = [pd.to_datetime(self.unique_dates[min(i, len(self.unique_dates) - 1)]).strftime('%b %Y') for i in x_ticks]
         plt.xticks(x_ticks, x_labels, rotation=45, ha='right')
         
         plt.xlabel('Date')
