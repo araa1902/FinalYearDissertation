@@ -26,7 +26,8 @@ class PPOTrainer:
             ent_coef=self.config["ent_coef"],
             gamma=self.config["gamma"],
             gae_lambda=self.config["gae_lambda"],
-            clip_range=self.config["clip_range"]
+            clip_range=self.config["clip_range"],
+            seed=42  # Ensure reproducibility
         )
 
         # Set up evaluation callback to monitor performance during training and save best model

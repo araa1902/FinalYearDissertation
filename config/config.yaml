@@ -1,35 +1,44 @@
-# config/config.yaml
 data:
-  start_date: "2016-01-01"
-  end_date: "2022-12-31"
+  # Extended timeline to capture 2022 Inflation Crash & 2023 Recovery
+  start_date: "2015-01-01"
+  end_date: "2023-12-31"
+
+  # Split point: Agent learns on Covid (2020), tested on Inflation (2022)
+  train_end_date: "2020-12-31"
+  test_start_date: "2021-01-01"
+
   ticker_list:
-    # Technology (High Volatility / Growth)
-    - "AAPL"
-    - "MSFT"
-    - "NVDA"
+    # --- Tech (Growth / High Volatility) ---
+    - "AAPL" # Apple: Market leader in consumer electronics
+    - "MSFT" # Microsoft: Leading software and cloud services provider
+    - "NVDA" # NVIDIA: Leader in GPUs and AI hardware
 
-    # Financials (Interest Rate Sensitive)
-    - "JPM"
-    - "GS"
+    # --- Financials (Interest Rate Sensitive) ---
+    - "JPM" # JPMorgan Chase: Largest US bank, benefits from rising rates
+    - "GS" # Goldman Sachs: Leading global investment bank
 
-    # Healthcare (Defensive)
-    - "JNJ"
-    - "PFE"
+    # --- Healthcare (Defensive) ---
+    - "JNJ" # Johnson & Johnson: Diversified healthcare giant
+    - "PFE" # Pfizer: Major pharmaceutical company
 
-    # Consumer Staples (Low Volatility)
-    - "WMT"
-    - "KO"
+    # --- Consumer Staples (Low Volatility) ---
+    - "WMT" # Walmart: Leading retailer with stable demand
+    - "KO" # Coca-Cola: Major beverage company with consistent revenue
 
-    # Energy (Commodity / Macro Sensitive)
-    - "XOM"
-    - "CVX"
+    # --- Energy (Inflation Hedge) ---
+    - "XOM" # ExxonMobil: Major energy company, often benefits from inflation
+    - "CVX" # Chevron: Another major energy player, also benefits from inflation
 
-    # Industrials (Macro Cyclical)
-    - "CAT"
+    # --- Industrials (Macro Cyclical) ---
+    - "CAT" # Caterpillar: Industrial bellwether sensitive to economic cycles
+
+    # --- Critical Hedging Assets (Safety) ---
+    - "GLD" # Gold: The "Fear" asset (Uncorrelated Store of Value)
+    - "TLT" # Bonds: Traditional Hedge (20+ Year Treasury)
 
 preprocessing:
   normalisation_window: 63 # 3 months rolling window for normalisation
-  use_technical_indicators: true
+  use_technical_indicator: true
   tech_indicator_list:
     - "macd"
     - "rsi"
@@ -37,30 +46,38 @@ preprocessing:
     - "dx"
     - "boll_ub"
     - "boll_lb"
-  use_turbulence: False
 
 graph:
-  lookback: 30 # Graph Lookback Window
+  lookback_window: 63 # ~2 months. Faster response to sudden crashes (e.g., Covid).
   sparsity_method: "threshold" # Options: 'threshold' or 'knn'
-  threshold: 0.3 # Correlation threshold for edge creation
+  threshold: 0.5 # Correlation threshold for edge creation
   top_k: 4 # Top-k connections per node (if using knn method)
 
 env:
   initial_amount: 1000000
   transaction_cost_pct: 0.001 # 0.1% cost per trade
-  reward_scaling: 1.0
-  hmax: 500 # Max shares to trade per step
-  turbulence_threshold: null # Set to null or a numeric value
+  reward_scaling: 1.0 # Keep standard scaling
+  hmax: 500 # Max shares per trade (Legacy parameter)
+  turbulence_threshold: null # Set to null to force agent to trade through crashes (Stress Test)
 
 ppo:
-  learning_rate: 0.0001 # Adjusted learning rate for stability
-  n_steps: 2048 # Increased number of steps per update
-  batch_size: 64 # Standard batch size for PPO
+  learning_rate: 0.0001 # Conservative LR to prevent overfitting to noise
+  n_steps: 2048 # Standard rollout buffer size
+  batch_size: 64
   gamma: 0.99 # Discount factor
-  gae_lambda: 0.95 # GAE parameter
-  clip_range: 0.2 # Clipping range for PPO
-  ent_coef: 0.005 # Entropy coefficient
-  total_timesteps: 300000 # Total training timesteps
-  eval_freq: 5000 # Evaluation frequency
+  gae_lambda: 0.95
+  clip_range: 0.2
+  ent_coef: 0.001 # High entropy to encourage exploration of diverse portfolios
+  total_timesteps: 300000 # Sufficient for baseline convergence
+  eval_freq: 5000
   best_model_path: "./models/best_model/"
   log_path: "./results/eval_logs/"
+
+gat:
+  n_hidden: 32 # Embedding dimension
+  n_heads: 4 # Multi-head attention
+  dropout: 0.5 # High dropout is crucial for GAT generalisation
+  alpha: 0.2
+  lr: 0.005
+  weight_decay: 0.0005
+  epochs: 200

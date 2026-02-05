@@ -18,27 +18,32 @@ class GraphBuilder:
             
             return wide_returns
     
-    def build_graphs(self, sparsity_method: str = 'threshold') -> dict:
+    def build_graphs(self, sparsity_method) -> dict:
         """Builds correlation graphs using trailing windows [t-Tw, t-1]."""
         graphs = {}
-        num_days = len(self.df['date'].unique())
+        # Get unique dates from pre-stored list to ensure alignment
+        num_days = len(self.unique_dates)
         wide_returns = self.get_wide_returns()
 
-        # Choice of sparsity method: 'knn' or 'threshold' - used in ablation studies
         for i in range(self.lookback_window, num_days):
+            # Get the specific date label for this step
+            date = self.unique_dates[i]
+            
+            # Create trailing window
             returns_window = wide_returns.iloc[i - self.lookback_window:i]
             corr_matrix = np.nan_to_num(returns_window.corr('pearson').values, nan=0.0)
+            
             if sparsity_method == 'knn':
-                # Keep only top_k strongest connections per node
                 abs_corr = np.abs(corr_matrix)
                 partition_index = np.argpartition(abs_corr, -self.top_k, axis=1)
                 mask, rows = np.zeros_like(corr_matrix, dtype=bool), np.arange(corr_matrix.shape[0])[:, None]
                 mask[rows, partition_index[:, -self.top_k:]] = True
                 adj_matrix = np.where(mask, abs_corr, 0)
             else:
-                # Apply thresholding
-                adj_matrix = np.where((corr_matrix >= self.threshold) | (corr_matrix <= -self.threshold), np.abs(corr_matrix), 0)
+                adj_matrix = np.where(np.abs(corr_matrix) >= self.threshold, corr_matrix, 0)
             
-            graphs[self.unique_dates[i]] = adj_matrix
-
+            np.fill_diagonal(adj_matrix, 1.0)
+            
+            graphs[date] = adj_matrix
+            
         return graphs

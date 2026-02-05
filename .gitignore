@@ -2,3 +2,57 @@
 __pycache__/
 .ipynb_checkpoints/
 .env
+
+# Node.js
+node_modules/
+bun.lock
+package-lock.json
+
+# Generated files
+*.tex
+*.svg
+*.mp4
+*.npz
+*.pdf
+
+results/
+models/
+
+# Manim output directories
+manimAnim/media/
+media/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.js
+*.json
+*.png
+*.csv

@@ -1,5 +1,5 @@
-# This environment is adapted based on FinRL's Portfolio Allocation Environment implementation. Due to the nature of my research, I have modified the environment to incorporate graph structures and portfolio management specifics.
-# Link: https://finrl.readthedocs.io/en/latest/tutorial/Introduction/PortfolioAllocation.html
+# Baseline environment without graph embeddings for comparison
+# This is identical to StockPortfolioEnv but excludes graph embeddings from the state
 import numpy as np
 import pandas as pd
 import gymnasium as gym
@@ -11,12 +11,15 @@ import os
 from datetime import datetime
 from matplotlib.lines import Line2D
 
-class StockPortfolioEnv(gym.Env):
+class StockPortfolioEnvBaseline(gym.Env):
+    """
+    Baseline portfolio environment WITHOUT graph embeddings.
+    State consists only of technical features, not the adjacency matrix.
+    """
     metadata = {'render_modes': ['human']}
 
     def __init__(self,
                 df,
-                graph_dict,
                 stock_dim,
                 initial_amount,
                 transaction_cost_pct,
@@ -32,7 +35,6 @@ class StockPortfolioEnv(gym.Env):
         self.day = day
         self.lookback = lookback
         self.df = df
-        self.graph_dict = graph_dict # Store the graph dict
         self.stock_dim = stock_dim
         self.initial_amount = initial_amount
         self.transaction_cost_pct = transaction_cost_pct
@@ -42,19 +44,19 @@ class StockPortfolioEnv(gym.Env):
         
         # Generate unique filename with timestamp for this training run
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        self.results_csv_path = results_csv_path or f'results/episodes_metrics_with_graphs_{timestamp}.csv'
+        self.results_csv_path = results_csv_path or f'results/episodes_metrics_without_graphs_{timestamp}.csv'
         self.all_episode_returns = []  # Track returns across all episodes
 
         # Get unique dates from the dataframe to index our steps
         self.unique_dates = sorted(self.df['date'].unique().tolist())
-        
+            
         # Action space: Portfolio weights (must sum to 1)
         self.action_space = spaces.Box(low=0, high=1, shape=(self.stock_dim,))
         
-        # State space: Matrix of shape (N_assets + N_indicators, N_assets)
-        # Row 0 to N-1: The Adjacency Matrix (Graph)
-        # Row N to End: The Feature Vectors (Price, Tech Indicators)
-        self.observation_space = spaces.Box(low=-np.inf, high=np.inf,shape=(self.stock_dim + len(self.tech_indicator_list), self.stock_dim))
+        # State space: Matrix of shape (N_indicators, N_assets)
+        # ONLY Feature Vectors (Price, Tech Indicators) - NO GRAPH
+        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, 
+                                           shape=(len(self.tech_indicator_list), self.stock_dim))
 
         self.terminal = False
         self.turbulence_threshold = turbulence_threshold
@@ -80,14 +82,12 @@ class StockPortfolioEnv(gym.Env):
         return day_data, date
 
     def get_state(self, day_data : pd.DataFrame, date: str) -> np.ndarray:
-        """Constructs the state matrix: Graph + Features"""
-        covs = self.graph_dict.get(date, np.eye(self.stock_dim))
-        
-        #Get Technical Features [N_features, N_stocks]
+        """Constructs the state matrix: ONLY Features (NO Graph)"""
+        # Get Technical Features [N_features, N_stocks]
         tech_features = []
         for tech in self.tech_indicator_list:
             tech_features.append(day_data[tech].values.tolist())
-        state = np.vstack((covs, np.array(tech_features)))
+        state = np.array(tech_features)
         return state
 
     def calculate_episode_metrics(self):

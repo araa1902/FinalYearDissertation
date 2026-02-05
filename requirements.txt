@@ -1,7 +1,6 @@
-# Core RL
-finrl
+# Core RL and training requirements (without heavy optional dependencies)
 gymnasium
-stable-baselines3[extra]
+stable-baselines3
 
 # Deep Learning & Graphs
 torch
@@ -15,10 +14,15 @@ scikit-learn
 yfinance
 ta
 
-# Explainability & Viz
-shap
+# Visualization (essential)
 matplotlib
 seaborn
 
+# Dashboard
+streamlit
+
 # Config
 pyyaml
+
+# Explainability
+shap
