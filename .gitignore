@@ -1,39 +1,23 @@
-*.DS_Store
-__pycache__/
-.ipynb_checkpoints/
-.env
+# ============================================================
+# OS
+# ============================================================
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
 
-# Node.js
-node_modules/
-bun.lock
-package-lock.json
-
-# Generated files
-*.tex
-*.svg
-*.mp4
-*.npz
-*.pdf
-
-results/
-models/
-
-# Manim output directories
-manimAnim/media/
-media/
-
-# Jupyter
-.ipynb_checkpoints/
-
+# ============================================================
 # Python
+# ============================================================
 __pycache__/
 *.py[cod]
-*$py.class
+*.pyd
 *.so
-.Python
+*.egg
+*.egg-info/
+dist/
 build/
 develop-eggs/
-dist/
 downloads/
 eggs/
 .eggs/
@@ -43,16 +27,65 @@ parts/
 sdist/
 var/
 wheels/
-*.egg-info/
 .installed.cfg
-*.egg
+.Python
 
+# ============================================================
+# Virtual environments (root-anchored to avoid matching src/env)
+# ============================================================
+venv/
+/env/
+ENV/
+.venv/
+
+# ============================================================
 # IDE
+# ============================================================
 .vscode/
 .idea/
 *.swp
 *.swo
-*.js
-*.json
-*.png
-*.csv
+*~
+
+# ============================================================
+# Jupyter
+# ============================================================
+.ipynb_checkpoints/
+
+# ============================================================
+# Environment / secrets
+# ============================================================
+.env
+.env.local
+
+# ============================================================
+# Node.js
+# ============================================================
+node_modules/
+bun.lock
+package-lock.json
+yarn.lock
+
+# ============================================================
+# Large binary / generated outputs
+# ============================================================
+*.pkl
+*.pickle
+*.npz
+*.pth
+*.pt
+*.mp4
+
+# ============================================================
+# Results, models, raw data (ignore contents, keep structure)
+# ============================================================
+results/
+models/
+data/raw/
+
+# ============================================================
+# Testing / cache
+# ============================================================
+.pytest_cache/
+.mypy_cache/
+.coverage

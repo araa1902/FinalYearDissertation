@@ -1,4 +1,5 @@
-# This environment is adapted based on FinRL's Portfolio Allocation Environment implementation. Due to the nature of my research, I have modified the environment to incorporate graph structures and portfolio management specifics.
+# This environment is adapted based on FinRL's Portfolio Allocation Environment implementation. 
+# Due to the nature of my research, I have modified the environment to incorporate graph structures and portfolio management specifics.
 # Link: https://finrl.readthedocs.io/en/latest/tutorial/Introduction/PortfolioAllocation.html
 import numpy as np
 import pandas as pd
@@ -10,6 +11,7 @@ import matplotlib.pyplot as plt
 import os
 from datetime import datetime
 from matplotlib.lines import Line2D
+import pickle
 
 class StockPortfolioEnv(gym.Env):
     metadata = {'render_modes': ['human']}
@@ -27,7 +29,9 @@ class StockPortfolioEnv(gym.Env):
                 turbulence_threshold,
                 lookback=252,
                 day=0,
-                results_csv_path=None):
+                results_csv_path=None,
+                sector_map=None,
+                max_sector_weight=0.4):
         
         self.day = day
         self.lookback = lookback
@@ -39,6 +43,11 @@ class StockPortfolioEnv(gym.Env):
         self.reward_scaling = reward_scaling
         self.state_space = state_space
         self.tech_indicator_list = tech_indicator_list
+        self.sector_map = sector_map or {}
+        self.max_sector_weight = max_sector_weight  # Max allocation per sector (0.4 = 40%)
+        
+        # Build sector-to-indices mapping for constraint checking
+        self.sector_indices = self._build_sector_indices()
         
         # Generate unique filename with timestamp for this training run
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -51,10 +60,11 @@ class StockPortfolioEnv(gym.Env):
         # Action space: Portfolio weights (must sum to 1)
         self.action_space = spaces.Box(low=0, high=1, shape=(self.stock_dim,))
         
-        # State space: Matrix of shape (N_assets + N_indicators, N_assets)
+        # State space: Matrix of shape (N_assets + N_indicators + 2, N_assets)
+        # Where N_indicators + 2 = len(tech_indicator_list) + volume + log_return
         # Row 0 to N-1: The Adjacency Matrix (Graph)
-        # Row N to End: The Feature Vectors (Price, Tech Indicators)
-        self.observation_space = spaces.Box(low=-np.inf, high=np.inf,shape=(self.stock_dim + len(self.tech_indicator_list), self.stock_dim))
+        # Row N to End: The Feature Vectors (Tech Indicators + Volume + Log Return)
+        self.observation_space = spaces.Box(low=-np.inf, high=np.inf,shape=(self.stock_dim + len(self.tech_indicator_list) + 2, self.stock_dim))
 
         self.terminal = False
         self.turbulence_threshold = turbulence_threshold
@@ -64,10 +74,39 @@ class StockPortfolioEnv(gym.Env):
         self.actions_memory = [[1/self.stock_dim]*self.stock_dim]
         self.episode_count = 0  # Track episode number
         
+        # Risk-aware reward parameters
+        self.volatility_lookback = 20  # 20-day rolling window for volatility
+        self.recent_returns = []  # Track recent returns for volatility calculation
+        self.max_drawdown_in_episode = 0  # Track max drawdown for this episode
+        self.peak_value = self.initial_amount  # Track peak portfolio value
+        
+        #Attention Logging Buffer for Intrinsic Explainability
+        self.attention_buffer = {
+            'timestamps': [],           # List of dates
+            'attention_weights': [],    # List of attention matrices (batch_size, n_heads, N, N)
+            'adjacency_matrices': [],   # List of processed adjacency matrices
+            'portfolio_values': [],     # Portfolio value at each step
+            'dates': []                 # ISO format timestamps
+        }
+        
         # Initialise State
         self.data, self.current_date_str = self.get_daily_data(self.day)
         self.state = self.get_state(self.data, self.current_date_str)
         self.date_memory = [self.current_date_str]
+    
+    def _build_sector_indices(self):
+        """Build mapping from sector -> list of stock indices for constraint checking."""
+        sector_to_indices = {}
+        tickers = sorted(self.df['ticker'].unique().tolist())
+        
+        for sector, ticker in self.sector_map.items():
+            if ticker in tickers:
+                idx = tickers.index(ticker)
+                if sector not in sector_to_indices:
+                    sector_to_indices[sector] = []
+                sector_to_indices[sector].append(idx)
+        
+        return sector_to_indices
 
     def get_daily_data(self, day_index : int):
         """Helper to get all ticker data for a specific calendar day."""
@@ -83,10 +122,14 @@ class StockPortfolioEnv(gym.Env):
         """Constructs the state matrix: Graph + Features"""
         covs = self.graph_dict.get(date, np.eye(self.stock_dim))
         
-        #Get Technical Features [N_features, N_stocks]
+        #Get Technical Features + Volume + Log_Return [N_features, N_stocks]
+        # N_features = len(tech_indicator_list) + 2 (volume + log_return)
         tech_features = []
         for tech in self.tech_indicator_list:
             tech_features.append(day_data[tech].values.tolist())
+        # Add volume and log_return to complete the 8-dimensional feature set
+        tech_features.append(day_data['volume'].values.tolist())
+        tech_features.append(day_data['log_return'].values.tolist())
         state = np.vstack((covs, np.array(tech_features)))
         return state
 
@@ -153,6 +196,31 @@ class StockPortfolioEnv(gym.Env):
         self.save_episode_metrics(metrics)
         self.track_episode_returns(metrics)
 
+    def log_attention_weights(self, feature_extractor):
+        """
+        Capture attention weights from the GAT feature extractor.
+        Called after each environment step to maintain temporal alignment.
+        """
+        if hasattr(feature_extractor, 'latest_attention_weights') and feature_extractor.latest_attention_weights is not None:
+            self.attention_buffer['timestamps'].append(self.current_date_str)
+            self.attention_buffer['dates'].append(datetime.now().isoformat())
+            
+            # Store attention weights (shape: batch_size, n_heads, N, N)
+            attn = feature_extractor.latest_attention_weights
+            if attn.dim() == 4:  # (batch, heads, N, N)
+                attn = attn.mean(dim=0)  # Average across batch -> (heads, N, N)
+            
+            self.attention_buffer['attention_weights'].append(attn.numpy())
+            
+            # Store processed adjacency matrix for context
+            if hasattr(feature_extractor, 'latest_adjacency') and feature_extractor.latest_adjacency is not None:
+                adj = feature_extractor.latest_adjacency
+                if adj.dim() == 3: adj = adj.mean(dim=0)  # Average across batch -> (N, N)
+                self.attention_buffer['adjacency_matrices'].append(adj.numpy())
+            
+            # Track portfolio value
+            self.attention_buffer['portfolio_values'].append(self.portfolio_value)
+
     def step(self, actions):
         self.terminal = self.day >= len(self.unique_dates) - 1
 
@@ -183,7 +251,7 @@ class StockPortfolioEnv(gym.Env):
             return self.state, self.reward, False, False, {}
 
     def process_actions(self, actions):
-        """Convert raw actions to normalised portfolio weights"""
+        """Convert raw actions to normalised portfolio weights with sector constraints"""
         actions = np.array(actions)
         exp_values = np.exp(actions - np.max(actions))
         weights = exp_values / np.sum(exp_values)
@@ -194,6 +262,20 @@ class StockPortfolioEnv(gym.Env):
             weights /= w_sum
         else:
             weights = np.ones_like(weights) / self.stock_dim
+        
+        # Apply sector constraints: cap allocation per sector at max_sector_weight
+        if self.sector_indices:
+            for sector, indices in self.sector_indices.items():
+                sector_weight = np.sum(weights[indices])
+                if sector_weight > self.max_sector_weight:
+                    # Scale down sector weights proportionally
+                    excess = sector_weight - self.max_sector_weight
+                    weights[indices] *= (1 - excess / sector_weight)
+            
+            # Renormalise to ensure weights sum to 1
+            total_weight = np.sum(weights)
+            if total_weight > 0:
+                weights /= total_weight
         
         return weights
 
@@ -220,8 +302,43 @@ class StockPortfolioEnv(gym.Env):
         self.asset_memory.append(self.portfolio_value)
 
     def calculate_reward(self):
-        """Calculate the log return reward"""
-        reward = np.log(self.portfolio_value / self.asset_memory[-2])
+        """
+        Calculate risk-adjusted reward:
+        reward = log_return - volatility_penalty - drawdown_penalty
+        
+        This incentivises:
+        - Returns (positive log_return)
+        - Smooth returns (low volatility)
+        - Drawdown avoidance (protect capital)
+        """
+        # 1. Basic log return
+        log_return = np.log(self.portfolio_value / self.asset_memory[-2])
+        
+        # 2. Track recent returns for volatility calculation
+        self.recent_returns.append(log_return)
+        if len(self.recent_returns) > self.volatility_lookback:
+            self.recent_returns.pop(0)
+        
+        # 3. Calculate rolling volatility (penalises erratic behavior)
+        if len(self.recent_returns) > 1:
+            volatility = np.std(self.recent_returns)
+        else:
+            volatility = 0.0
+        
+        # 4. Track maximum drawdown in episode (penalises losing capital)
+        if self.portfolio_value > self.peak_value:
+            self.peak_value = self.portfolio_value
+        
+        drawdown = (self.peak_value - self.portfolio_value) / self.peak_value
+        self.max_drawdown_in_episode = max(self.max_drawdown_in_episode, drawdown)
+        
+        # 5. Construct risk-aware reward
+        # Weights: focus on returns but penalise volatility and drawdowns
+        volatility_penalty = 0.5 * volatility  # Penalise erratic returns
+        drawdown_penalty = 2.0 * drawdown      # Penalise current drawdown state
+        
+        reward = log_return - volatility_penalty - drawdown_penalty
+        
         return reward * self.reward_scaling
     
     def reset(self, seed=None, options=None):
@@ -233,8 +350,23 @@ class StockPortfolioEnv(gym.Env):
         self.portfolio_value = self.initial_amount
         self.terminal = False
         self.portfolio_return_memory = [0]
+        
+        # Reset risk tracking for new episode
+        self.recent_returns = []
+        self.max_drawdown_in_episode = 0
+        self.peak_value = self.initial_amount
         self.actions_memory = [[1/self.stock_dim]*self.stock_dim]
         self.date_memory = [self.current_date_str]
+        
+        # SPRINT 1: Reset attention buffer for new episode
+        self.attention_buffer = {
+            'timestamps': [],
+            'attention_weights': [],
+            'adjacency_matrices': [],
+            'portfolio_values': [],
+            'dates': []
+        }
+        
         return self.state, {}
     
     def save_final_results(self):
@@ -247,6 +379,40 @@ class StockPortfolioEnv(gym.Env):
         
         graph_path = self.plot_all_episodes()
         self.print_training_summary(graph_path)
+        
+        # Save attention buffer for explainability analysis
+        self.save_attention_buffer()
+
+    def save_attention_buffer(self):
+        """
+        Save the attention weights buffer to disk for later analysis.
+        Creates a pickle file with all captured attention data.
+        """
+        
+        if not self.attention_buffer['timestamps']:
+            print("No attention data to save")
+            return
+        
+        os.makedirs('results/attention_logs', exist_ok=True)
+        
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        attention_log_path = f'results/attention_logs/attention_buffer_{timestamp}.pkl'
+        buffer_to_save = {
+            'timestamps': self.attention_buffer['timestamps'],
+            'dates': self.attention_buffer['dates'],
+            'attention_weights': [attn.tolist() if hasattr(attn, 'tolist') else attn 
+                                  for attn in self.attention_buffer['attention_weights']],
+            'adjacency_matrices': [adj.tolist() if hasattr(adj, 'tolist') else adj 
+                                   for adj in self.attention_buffer['adjacency_matrices']],
+            'portfolio_values': self.attention_buffer['portfolio_values']
+        }
+        
+        with open(attention_log_path, 'wb') as f:
+            pickle.dump(buffer_to_save, f)
+        
+        print(f"\nAttention buffer saved: {attention_log_path}")
+        print(f"  Timesteps captured: {len(self.attention_buffer['timestamps'])}")
+
 
     def plot_all_episodes(self):
         """Generate and save the cumulative reward plot for all episodes"""

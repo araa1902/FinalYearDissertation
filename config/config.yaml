@@ -1,9 +1,9 @@
 data:
-  # Extended timeline to capture 2022 Inflation Crash & 2023 Recovery
+  # Extended timeline to capture 2022 Inflation Crash & 2023-2024 Recovery
   start_date: "2015-01-01"
-  end_date: "2023-12-31"
+  end_date: "2024-12-31"
 
-  # Split point: Agent learns on Covid (2020), tested on Inflation (2022)
+  # Split point: Agent learns on Covid (2020), tested on Inflation + Recovery (2021-2024)
   train_end_date: "2020-12-31"
   test_start_date: "2021-01-01"
 
@@ -36,6 +36,23 @@ data:
     - "GLD" # Gold: The "Fear" asset (Uncorrelated Store of Value)
     - "TLT" # Bonds: Traditional Hedge (20+ Year Treasury)
 
+  # Sector mapping for each ticker (used for sectoral matrix in graph building)
+  sector_map:
+    "AAPL": "TECH"
+    "MSFT": "TECH"
+    "NVDA": "TECH"
+    "JPM": "FIN"
+    "GS": "FIN"
+    "JNJ": "HLTH"
+    "PFE": "HLTH"
+    "WMT": "CONS"
+    "KO": "CONS"
+    "XOM": "ENRG"
+    "CVX": "ENRG"
+    "CAT": "IND"
+    "GLD": "COMM"
+    "TLT": "BOND"
+
 preprocessing:
   normalisation_window: 63 # 3 months rolling window for normalisation
   use_technical_indicator: true
@@ -50,7 +67,7 @@ preprocessing:
 graph:
   lookback_window: 63 # ~2 months. Faster response to sudden crashes (e.g., Covid).
   sparsity_method: "threshold" # Options: 'threshold' or 'knn'
-  threshold: 0.5 # Correlation threshold for edge creation
+  threshold: 0.2 # Correlation threshold for edge creation
   top_k: 4 # Top-k connections per node (if using knn method)
 
 env:
@@ -59,25 +76,37 @@ env:
   reward_scaling: 1.0 # Keep standard scaling
   hmax: 500 # Max shares per trade (Legacy parameter)
   turbulence_threshold: null # Set to null to force agent to trade through crashes (Stress Test)
+  max_sector_weight: 0.40 # Limit each sector to 40% max (prevents concentration)
 
 ppo:
-  learning_rate: 0.0001 # Conservative LR to prevent overfitting to noise
+  learning_rate: 0.00008 # REDUCED: Risk-aware reward needs more conservative learning
   n_steps: 2048 # Standard rollout buffer size
   batch_size: 64
   gamma: 0.99 # Discount factor
   gae_lambda: 0.95
   clip_range: 0.2
-  ent_coef: 0.001 # High entropy to encourage exploration of diverse portfolios
-  total_timesteps: 300000 # Sufficient for baseline convergence
+  ent_coef: 0.01 # Encourage more exploration with new reward structure
+  total_timesteps: 300000 # 33% more steps for better convergence with risk penalties
   eval_freq: 5000
   best_model_path: "./models/best_model/"
   log_path: "./results/eval_logs/"
 
 gat:
-  n_hidden: 32 # Embedding dimension
-  n_heads: 4 # Multi-head attention
-  dropout: 0.5 # High dropout is crucial for GAT generalisation
+  n_hidden: 32
+  n_heads: 4
+  dropout: 0.2
   alpha: 0.2
-  lr: 0.005
-  weight_decay: 0.0005
-  epochs: 200
+  threshold: 0.5 # Graph sparsity threshold (same as price correlation threshold)
+  sector_weight: 0.3 # Start at 0.3 to balance correlation+sector adjacency
+  # sector_weight will be sigmoid'd: 0.3 -> ~0.574 weight on sector, 0.426 on correlation
+
+explainability:
+  explainer_epochs: 300 # Higher epochs ensure the edge_mask converges on the minimal subgraph
+  learning_rate: 0.005 # Lower LR for better stability when matching 256-dim embeddings
+
+  # Structural Masking thresholds
+  mask_threshold: 0.8 # Edges scoring below this are pruned from the minimal subgraph
+
+  # Metric Evaluation settings
+  fidelity_type: "cosine" # Cosine Similarity for embeddings
+  stability_runs: 5 # Number of iterations to compute the Jaccard Similarity index

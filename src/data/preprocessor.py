@@ -1,16 +1,15 @@
 import numpy as np
 import pandas as pd
 import ta
-import yaml
+from src.utils.config_manager import load_config
 
 class FeatureEngineer:
     """Preprocesses data with technical indicators and rolling normalisation."""
     def __init__(self, use_technical_indicator: bool = True, tech_indicator_list: list = None, normalisation_window: int = 63):
-        with open("config/config.yaml", "r") as file:
-            self.config = yaml.safe_load(file)
+        config = load_config()
         
         self.use_technical_indicator = use_technical_indicator
-        self.tech_indicator_list = tech_indicator_list if tech_indicator_list is not None else self.config['preprocessing']['tech_indicator_list']
+        self.tech_indicator_list = tech_indicator_list if tech_indicator_list is not None else config['preprocessing']['tech_indicator_list']
         self.normalisation_window = normalisation_window
 
     def _add_technical_indicators(self, df: pd.DataFrame) -> pd.DataFrame:

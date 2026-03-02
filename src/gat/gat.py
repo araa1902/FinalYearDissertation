@@ -6,7 +6,7 @@ import torch.nn.functional as F
 class GATLayer(nn.Module):
    """
    Singular Graph Attention Layer as adapted from the paper:
-   "Graph Attention Networks by Velickovic et al. (2018)
+   "Graph Attention Networks" by Velickovic et al. (2018)
    """
    def __init__(self, in_features: int, out_features: int, dropout: float, alpha: float, concat=True):
        super(GATLayer, self).__init__()
@@ -79,13 +79,15 @@ class GAT(nn.Module):
    def forward(self, x: torch.Tensor, adj: torch.Tensor) -> torch.Tensor:
        x = F.dropout(x, self.dropout, training=self.training)
        
-       # Forward pass through all heads
+       # Forward pass through all heads - capture multi-head attention
        head_results = [att(x, adj) for att in self.attentions]
+       multi_head_attentions = torch.stack([res[1] for res in head_results], dim=1)  # Shape: (batch, n_heads, N, N)
        x_cat = torch.cat([res[0] for res in head_results], dim=2)
       
        x_cat = F.dropout(x_cat, self.dropout, training=self.training)
       
-       # return final output layer along with attention weights
+       # return final output layer along with multi-head attention weights
        x, final_attn_weights = self.out_att(x_cat, adj)
-       return x, final_attn_weights
+       # Average attention across heads for final layer as well
+       return x, multi_head_attentions
    
