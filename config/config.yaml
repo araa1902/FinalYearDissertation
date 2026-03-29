@@ -101,12 +101,11 @@ gat:
   # sector_weight will be sigmoid'd: 0.3 -> ~0.574 weight on sector, 0.426 on correlation
 
 explainability:
-  explainer_epochs: 300 # Higher epochs ensure the edge_mask converges on the minimal subgraph
-  learning_rate: 0.005 # Lower LR for better stability when matching 256-dim embeddings
+  # Exact Edge Ablation Settings
+  mask_threshold: 0.8 # Edges with a normalized impact score below this are pruned from the causal subgraph
 
-  # Structural Masking thresholds
-  mask_threshold: 0.8 # Edges scoring below this are pruned from the minimal subgraph
+  # Noise Filtering
+  min_significance: 0.001 # Absolute minimum cosine drop required to be considered causal (prevents noise inflation)
 
   # Metric Evaluation settings
-  fidelity_type: "cosine" # Cosine Similarity for embeddings
-  stability_runs: 5 # Number of iterations to compute the Jaccard Similarity index
+  fidelity_type: "cosine" # Metric used to measure the representation drop when an edge is ablated
