@@ -9,19 +9,14 @@ from src.data.graphbuilder import GraphBuilder
 from src.env.portfolio_env import StockPortfolioEnv
 from src.env.portfolio_env_baseline import StockPortfolioEnvBaseline
 from src.agents.PPOTrainer import PPOTrainer
+from src.utils.config_manager import load_config
+from src.utils.seeding import Seed
 from stable_baselines3 import PPO
-import yaml
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 import numpy as np
 import os
 from datetime import datetime
-from src.utils.seeding import Seed
-
-def load_config():
-    with open("config/config.yaml", "r") as file:
-        return yaml.safe_load(file)
 
 def evaluate_model_on_test(model_path, env_class, env_kwargs, test_data):
     """
@@ -91,7 +86,7 @@ def evaluate_model_on_test(model_path, env_class, env_kwargs, test_data):
     
     return results
 
-def save_test_results(results, csv_path, ticker_list=None):
+def save_test_results(results, csv_path):
     """Save detailed test results to CSV."""
     df = pd.DataFrame({
         'date': results['dates'],
@@ -103,14 +98,6 @@ def save_test_results(results, csv_path, ticker_list=None):
     os.makedirs(os.path.dirname(csv_path), exist_ok=True)
     df.to_csv(csv_path, index=False)
     print(f"Test results saved to {csv_path}")
-    
-    # Also save actions separately for visualization
-    if ticker_list is not None:
-        actions_csv_path = csv_path.replace('.csv', '_actions.csv')
-        actions_df = pd.DataFrame(results['actions'], columns=ticker_list)
-        actions_df['date'] = results['dates']
-        actions_df.to_csv(actions_csv_path, index=False)
-        print(f"Action allocations saved to {actions_csv_path}")
 
 def train_and_evaluate():
     """Train both models and compare their performance on train and test sets"""
@@ -219,7 +206,7 @@ def train_and_evaluate():
     
     # Save test results
     test_csv_with = f"results/test_with_graphs_{timestamp}.csv"
-    save_test_results(test_results_with, test_csv_with, ticker_list=data_config['ticker_list'])
+    save_test_results(test_results_with, test_csv_with)
     
     print("\n--- Test Results (WITH Graphs) ---")
     print(f"Total Return: {test_results_with['total_return']:.2%}")
@@ -270,7 +257,7 @@ def train_and_evaluate():
     
     # Save test results
     test_csv_without = f"results/test_without_graphs_{timestamp}.csv"
-    save_test_results(test_results_without, test_csv_without, ticker_list=data_config['ticker_list'])
+    save_test_results(test_results_without, test_csv_without)
     
     print("\n--- Test Results (WITHOUT Graphs) ---")
     print(f"Total Return: {test_results_without['total_return']:.2%}")
@@ -288,18 +275,6 @@ def train_and_evaluate():
         test_results_without,
         test_csv_with,
         test_csv_without,
-        timestamp
-    )
-    
-    # ===== ACTION COMPARISON VISUALIZATION =====
-    print("\n" + "="*80)
-    print("GENERATING ACTION COMPARISON VISUALIZATIONS")
-    print("="*80 + "\n")
-    
-    generate_action_comparison(
-        test_results_with,
-        test_results_without,
-        data_config['ticker_list'],
         timestamp
     )
 
@@ -340,21 +315,21 @@ def generate_comparison_report(results_with, results_without, csv_with, csv_with
     print("="*80)
     
     # Key insights
-    print("\n📊 KEY INSIGHTS:")
+    print("\nKEY INSIGHTS:")
     if results_with['total_return'] > results_without['total_return']:
-        print(f"✅ Graph embeddings IMPROVED returns by {return_pct:.2f}%")
+        print(f"Graph embeddings IMPROVED returns by {return_pct:.2f}%")
     else:
-        print(f"⚠️  Graph embeddings DECREASED returns by {abs(return_pct):.2f}%")
+        print(f"Graph embeddings DECREASED returns by {abs(return_pct):.2f}%")
     
     if results_with['sharpe_ratio'] > results_without['sharpe_ratio']:
-        print(f"✅ Graph embeddings IMPROVED Sharpe ratio by {sharpe_pct:.2f}%")
+        print(f"Graph embeddings IMPROVED Sharpe ratio by {sharpe_pct:.2f}%")
     else:
-        print(f"⚠️  Graph embeddings DECREASED Sharpe ratio by {abs(sharpe_pct):.2f}%")
+        print(f"Graph embeddings DECREASED Sharpe ratio by {abs(sharpe_pct):.2f}%")
     
     if results_with['max_drawdown'] < results_without['max_drawdown']:
-        print(f"✅ Graph embeddings REDUCED max drawdown by {drawdown_pct:.2f}%")
+        print(f"Graph embeddings REDUCED max drawdown by {drawdown_pct:.2f}%")
     else:
-        print(f"⚠️  Graph embeddings INCREASED max drawdown by {abs(drawdown_pct):.2f}%")
+        print(f"Graph embeddings INCREASED max drawdown by {abs(drawdown_pct):.2f}%")
     
     print()
     
@@ -425,7 +400,7 @@ def generate_comparison_report(results_with, results_without, csv_with, csv_with
     plt.savefig(plot_path, dpi=150, bbox_inches='tight')
     plt.close()
     
-    print(f"📈 Comparison plot saved to: {plot_path}")
+    print(f"Comparison plot saved to: {plot_path}")
     
     # Save summary CSV
     summary_df = pd.DataFrame({
@@ -452,266 +427,10 @@ def generate_comparison_report(results_with, results_without, csv_with, csv_with
     
     summary_path = f'results/comparison_summary_{timestamp}.csv'
     summary_df.to_csv(summary_path, index=False)
-    print(f"📊 Summary CSV saved to: {summary_path}")
+    print(f"Summary CSV saved to: {summary_path}")
     
     print("\n" + "="*80)
     print("COMPARISON COMPLETE!")
-    print("="*80 + "\n")
-
-def generate_action_comparison(results_with, results_without, ticker_list, timestamp):
-    """
-    Generate comprehensive action comparison visualizations
-    
-    Args:
-        results_with: Results dict from graph agent
-        results_without: Results dict from baseline agent
-        ticker_list: List of ticker symbols
-        timestamp: Timestamp for file naming
-    """
-    import seaborn as sns
-    
-    # Convert actions to DataFrames
-    actions_with = pd.DataFrame(results_with['actions'], columns=ticker_list)
-    actions_without = pd.DataFrame(results_without['actions'], columns=ticker_list)
-    
-    # Add dates
-    dates = pd.to_datetime(results_with['dates'])
-    actions_with['date'] = dates
-    actions_without['date'] = dates
-    
-    actions_with.set_index('date', inplace=True)
-    actions_without.set_index('date', inplace=True)
-    
-    os.makedirs('results/action_comparisons', exist_ok=True)
-    
-    # Define sector groupings
-    sectors = {
-        'Tech': ['AAPL', 'MSFT', 'NVDA'],
-        'Financials': ['JPM', 'GS'],
-        'Healthcare': ['JNJ', 'PFE'],
-        'Consumer': ['WMT', 'KO'],
-        'Energy': ['XOM', 'CVX'],
-        'Industrials': ['CAT'],
-        'Hedges': ['GLD', 'TLT']
-    }
-    
-    # Create comprehensive visualization
-    fig = plt.figure(figsize=(20, 16))
-    gs = fig.add_gridspec(4, 2, hspace=0.3, wspace=0.3)
-    
-    # 1. Stacked Area Chart - Graph Agent
-    ax1 = fig.add_subplot(gs[0, 0])
-    actions_with.plot(kind='area', stacked=True, ax=ax1, alpha=0.8, linewidth=0, legend=False)
-    ax1.set_title('Portfolio Allocation Over Time - Graph Agent', fontsize=14, fontweight='bold')
-    ax1.set_xlabel('Date', fontsize=11)
-    ax1.set_ylabel('Portfolio Weight', fontsize=11)
-    ax1.set_ylim([0, 1])
-    ax1.grid(True, alpha=0.3)
-    
-    # 2. Stacked Area Chart - Baseline Agent
-    ax2 = fig.add_subplot(gs[0, 1])
-    actions_without.plot(kind='area', stacked=True, ax=ax2, alpha=0.8, linewidth=0, legend=False)
-    ax2.set_title('Portfolio Allocation Over Time - Baseline Agent', fontsize=14, fontweight='bold')
-    ax2.set_xlabel('Date', fontsize=11)
-    ax2.set_ylabel('Portfolio Weight', fontsize=11)
-    ax2.set_ylim([0, 1])
-    ax2.grid(True, alpha=0.3)
-    
-    # Add legend to the side
-    handles, labels = ax2.get_legend_handles_labels()
-    fig.legend(handles, labels, loc='center right', bbox_to_anchor=(0.98, 0.75), fontsize=9, ncol=1)
-    
-    # 3. Allocation Difference Heatmap
-    ax3 = fig.add_subplot(gs[1, :])
-    diff = actions_with - actions_without
-    
-    # Sample data for better visibility
-    sample_indices = np.arange(0, len(diff), max(1, len(diff) // 50))
-    diff_sampled = diff.iloc[sample_indices]
-    
-    sns.heatmap(diff_sampled.T, cmap='RdBu_r', center=0, ax=ax3, 
-                cbar_kws={'label': 'Allocation Difference\n(Graph - Baseline)'},
-                vmin=-0.3, vmax=0.3)
-    ax3.set_title('Portfolio Allocation Differences (Graph Agent - Baseline Agent)', 
-                  fontsize=14, fontweight='bold')
-    ax3.set_xlabel('Date', fontsize=11)
-    ax3.set_ylabel('Asset', fontsize=11)
-    
-    # Format x-axis with dates
-    date_labels = [diff_sampled.index[i].strftime('%Y-%m') for i in range(0, len(diff_sampled), max(1, len(diff_sampled) // 10))]
-    tick_positions = np.arange(0, len(diff_sampled), max(1, len(diff_sampled) // 10))
-    ax3.set_xticks(tick_positions)
-    ax3.set_xticklabels(date_labels, rotation=45, ha='right')
-    
-    # 4. Sector Allocation - Graph Agent
-    ax4 = fig.add_subplot(gs[2, 0])
-    sector_allocations_with = calculate_sector_allocations(actions_with, sectors)
-    sector_allocations_with.plot(kind='area', stacked=True, ax=ax4, alpha=0.8, linewidth=0)
-    ax4.set_title('Sector Allocation - Graph Agent', fontsize=14, fontweight='bold')
-    ax4.set_xlabel('Date', fontsize=11)
-    ax4.set_ylabel('Portfolio Weight', fontsize=11)
-    ax4.legend(loc='upper left', fontsize=9)
-    ax4.set_ylim([0, 1])
-    ax4.grid(True, alpha=0.3)
-    
-    # 5. Sector Allocation - Baseline Agent
-    ax5 = fig.add_subplot(gs[2, 1])
-    sector_allocations_without = calculate_sector_allocations(actions_without, sectors)
-    sector_allocations_without.plot(kind='area', stacked=True, ax=ax5, alpha=0.8, linewidth=0)
-    ax5.set_title('Sector Allocation - Baseline Agent', fontsize=14, fontweight='bold')
-    ax5.set_xlabel('Date', fontsize=11)
-    ax5.set_ylabel('Portfolio Weight', fontsize=11)
-    ax5.legend(loc='upper left', fontsize=9)
-    ax5.set_ylim([0, 1])
-    ax5.grid(True, alpha=0.3)
-    
-    # 6. Key Asset Allocation Comparison
-    ax6 = fig.add_subplot(gs[3, :])
-    key_assets = ['NVDA', 'JPM', 'GLD', 'TLT', 'AAPL', 'XOM']
-    
-    x = np.arange(len(key_assets))
-    width = 0.35
-    
-    avg_with = [actions_with[asset].mean() for asset in key_assets]
-    avg_without = [actions_without[asset].mean() for asset in key_assets]
-    
-    bars1 = ax6.bar(x - width/2, avg_with, width, label='Graph Agent', alpha=0.8)
-    bars2 = ax6.bar(x + width/2, avg_without, width, label='Baseline Agent', alpha=0.8)
-    
-    ax6.set_xlabel('Asset', fontsize=11)
-    ax6.set_ylabel('Average Portfolio Weight', fontsize=11)
-    ax6.set_title('Average Allocation Comparison - Key Assets', fontsize=14, fontweight='bold')
-    ax6.set_xticks(x)
-    ax6.set_xticklabels(key_assets)
-    ax6.legend(fontsize=11)
-    ax6.grid(True, alpha=0.3, axis='y')
-    
-    # Add value labels on bars
-    for bars in [bars1, bars2]:
-        for bar in bars:
-            height = bar.get_height()
-            ax6.text(bar.get_x() + bar.get_width()/2., height,
-                    f'{height:.3f}',
-                    ha='center', va='bottom', fontsize=8)
-    
-    plt.suptitle('Portfolio Action Comparison: Graph-Based vs Baseline Agent', 
-                 fontsize=16, fontweight='bold', y=0.995)
-    
-    # Save figure
-    plot_path = f'results/action_comparisons/comprehensive_action_comparison_{timestamp}.png'
-    plt.savefig(plot_path, dpi=150, bbox_inches='tight')
-    plt.close()
-    
-    print(f"✅ Comprehensive action comparison saved to: {plot_path}")
-    
-    # Generate insights
-    generate_allocation_insights(actions_with, actions_without, ticker_list)
-    
-    return plot_path
-
-def calculate_sector_allocations(actions_df, sectors):
-    """Aggregate individual asset allocations into sector allocations"""
-    sector_df = pd.DataFrame(index=actions_df.index)
-    
-    for sector_name, tickers in sectors.items():
-        available_tickers = [t for t in tickers if t in actions_df.columns]
-        if available_tickers:
-            sector_df[sector_name] = actions_df[available_tickers].sum(axis=1)
-        else:
-            sector_df[sector_name] = 0
-    
-    return sector_df
-
-def generate_allocation_insights(actions_with, actions_without, ticker_list):
-    """Generate textual insights comparing allocation strategies"""
-    
-    print("\n" + "="*80)
-    print("PORTFOLIO ALLOCATION INSIGHTS")
-    print("="*80 + "\n")
-    
-    # 1. Average allocations
-    print("📊 Average Portfolio Allocations:")
-    print("-" * 80)
-    print(f"{'Asset':<10} {'Graph Agent':<20} {'Baseline Agent':<20} {'Difference':<20}")
-    print("-" * 80)
-    
-    for ticker in ticker_list:
-        avg_with = actions_with[ticker].mean()
-        avg_without = actions_without[ticker].mean()
-        diff = avg_with - avg_without
-        
-        print(f"{ticker:<10} {avg_with:>18.4f} {avg_without:>18.4f} {diff:>+18.4f}")
-    
-    print("-" * 80 + "\n")
-    
-    # 2. Volatility of allocations
-    print("📈 Allocation Volatility (Standard Deviation):")
-    print("-" * 80)
-    print(f"{'Asset':<10} {'Graph Agent':<20} {'Baseline Agent':<20} {'Difference':<20}")
-    print("-" * 80)
-    
-    for ticker in ticker_list:
-        std_with = actions_with[ticker].std()
-        std_without = actions_without[ticker].std()
-        diff = std_with - std_without
-        
-        print(f"{ticker:<10} {std_with:>18.4f} {std_without:>18.4f} {diff:>+18.4f}")
-    
-    print("-" * 80 + "\n")
-    
-    # 3. Concentration metrics
-    print("🎯 Portfolio Concentration:")
-    print("-" * 80)
-    
-    herfindahl_with = (actions_with ** 2).sum(axis=1).mean()
-    herfindahl_without = (actions_without ** 2).sum(axis=1).mean()
-    
-    print(f"Graph Agent Herfindahl Index: {herfindahl_with:.4f}")
-    print(f"Baseline Agent Herfindahl Index: {herfindahl_without:.4f}")
-    
-    if herfindahl_with > herfindahl_without:
-        print("→ Graph agent maintains MORE concentrated positions")
-    else:
-        print("→ Baseline agent maintains MORE concentrated positions")
-    
-    print("-" * 80 + "\n")
-    
-    # 4. Turnover
-    print("🔄 Portfolio Turnover:")
-    print("-" * 80)
-    
-    turnover_with = np.abs(actions_with.diff()).sum(axis=1).mean()
-    turnover_without = np.abs(actions_without.diff()).sum(axis=1).mean()
-    
-    print(f"Graph Agent Average Daily Turnover: {turnover_with:.4f}")
-    print(f"Baseline Agent Average Daily Turnover: {turnover_without:.4f}")
-    
-    if turnover_with > turnover_without:
-        print("→ Graph agent rebalances MORE frequently")
-    else:
-        print("→ Baseline agent rebalances MORE frequently")
-    
-    print("-" * 80 + "\n")
-    
-    # 5. Key strategic differences
-    print("🔍 Key Strategic Differences:")
-    print("-" * 80)
-    
-    avg_diff = (actions_with - actions_without).mean().abs().sort_values(ascending=False)
-    
-    print("\nTop 5 Assets with Largest Allocation Differences:")
-    for i, (ticker, diff) in enumerate(avg_diff.head(5).items(), 1):
-        avg_with = actions_with[ticker].mean()
-        avg_without = actions_without[ticker].mean()
-        
-        if avg_with > avg_without:
-            preference = "PREFERS"
-        else:
-            preference = "AVOIDS"
-        
-        print(f"{i}. {ticker}: Graph agent {preference} this asset "
-              f"(avg diff: {abs(avg_with - avg_without):.4f})")
-    
     print("="*80 + "\n")
 
 if __name__ == "__main__":

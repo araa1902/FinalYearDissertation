@@ -3,9 +3,14 @@ data:
   start_date: "2015-01-01"
   end_date: "2024-12-31"
 
-  # Split point: Agent learns on Covid (2020), tested on Inflation + Recovery (2021-2024)
-  train_end_date: "2020-12-31"
-  test_start_date: "2021-01-01"
+  # Walk-forward split: Train → Validate → Test (no overlap)
+  # Train: 2015-2021 (7 years, covers bull 2017-2019 + COVID 2020-2021)
+  # Validation: 2022 (1 year, bear regime for hyperparameter selection)
+  # Test: 2023-2024 (2 years, strictly held-out for final evaluation)
+  train_end_date: "2021-12-31"
+  validation_start_date: "2022-01-01"
+  validation_end_date: "2022-12-31"
+  test_start_date: "2023-01-01"
 
   ticker_list:
     # --- Tech (Growth / High Volatility) ---
@@ -96,7 +101,7 @@ gat:
   n_heads: 4
   dropout: 0.2
   alpha: 0.2
-  threshold: 0.5 # Graph sparsity threshold (same as price correlation threshold)
+  threshold: 0.2 # Updated from 0.5: Phase transition analysis shows 0.2 is the critical threshold
   sector_weight: 0.3 # Start at 0.3 to balance correlation+sector adjacency
   # sector_weight will be sigmoid'd: 0.3 -> ~0.574 weight on sector, 0.426 on correlation
 

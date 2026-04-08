@@ -40,7 +40,7 @@ def prepare_data_for_explanation(env, model, target_date=None):
         if target_date:
             current_date = getattr(env.unwrapped, 'date', None) or env.unwrapped.dates[env.unwrapped.day]
             if str(current_date)[:10] == target_date:
-                print(f" ✓ Target Critical State Reached: {target_date}")
+                print(f"  Target Critical State Reached: {target_date}")
                 break
                 
         # Step the environment
@@ -340,7 +340,7 @@ if __name__ == "__main__":
         except ValueError:
             print(" Invalid input. Please enter a number or ticker name.")
     
-    print(f"\n✓ Selected: {target_ticker} (Index {target_node})")
+    print(f"\n Selected: {target_ticker} (Index {target_node})")
     
     # Example 1: Explain a single node
     print("\n" + "="*80)

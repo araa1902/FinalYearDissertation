@@ -72,6 +72,15 @@ class DenseGNNExplainer:
                     'source_ticker': tickers_list[src],
                     'target_ticker': tickers_list[target_node_idx]
                 })
+            else:
+                edge_impacts.append({
+                    'source': src,
+                    'target': target_node_idx,
+                    'weight': 0.0,
+                    'raw_fidelity_drop': 0.0,
+                    'source_ticker': tickers_list[src],
+                    'target_ticker': tickers_list[target_node_idx]
+                })
 
         # 4. Normalise scores to [0, 1] for thresholding (WITH NOISE FILTER)
         max_drop = max([e['raw_fidelity_drop'] for e in edge_impacts]) if edge_impacts else 0
@@ -119,7 +128,8 @@ class DenseGNNExplainer:
             'sparsity': sparsity,
             'max_single_edge_fidelity_drop': max_drop, 
             'subgraph_fidelity_drop': subgraph_fidelity_drop, 
-            'important_edges': important_edges
+            'important_edges': important_edges,
+            'all_edges': edge_impacts  # Include ALL edges (scored and normalised)
         }
         
         # Return none for mask as we are using direct edge lists now
