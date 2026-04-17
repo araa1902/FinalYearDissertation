@@ -12,16 +12,14 @@ from datetime import datetime
 import glob
 
 class PPOGATTrainer:
-    def __init__(self, env: StockPortfolioEnv, config: dict, val_env=None):
+    def __init__(self, env: StockPortfolioEnv, config: dict):
         self.env = DummyVecEnv([lambda: env])  # SB3 requires a vectorised env
         self.config = config
         self.model = None
-        self.val_env = val_env  # Optional validation environment
 
     def train(self):
         """
         Trains the PPO agent on the provided environment. Uses GATFeatureExtractor to process graph observations.
-        If validation environment is provided, uses it for early stopping.
         Captures attention weights during both training and evaluation phases.
         """
         print("Initialising PPO with GAT Feature Extractor...")
@@ -47,52 +45,30 @@ class PPOGATTrainer:
             seed=42  # Ensure reproducibility
         )
 
-        # Set up callbacks list
-        callbacks_list = []
+        # Set up evaluation callback to monitor performance during training and save best model
+        self.eval_callback = EvalCallback(
+            self.env,
+            best_model_save_path=self.config['best_model_path'],
+            log_path=self.config['log_path'],
+            eval_freq=self.config['eval_freq'],
+            deterministic=True,
+            render=False
+        )
         
         # Add attention logging callback for intrinsic explainability (TRAINING PHASE)
         attention_callback = AttentionLoggingCallback(verbose=1)
-        callbacks_list.append(attention_callback)
         
-        # If validation env provided, add validation-based early stopping
-        if self.val_env is not None:
-            print(" Validation environment detected - enabling validation-based model selection")
-            val_callback = EvalCallback(
-                self.val_env,
-                best_model_save_path=self.config['best_model_path'],
-                log_path=self.config['log_path'],
-                eval_freq=self.config['eval_freq'],
-                deterministic=True,
-                render=False,
-                verbose=1
-            )
-            callbacks_list.append(val_callback)
-        else:
-            # Fallback: use training env for monitoring only
-            print(" No validation environment provided - using training env for monitoring")
-            train_callback = EvalCallback(
-                self.env,
-                best_model_save_path=self.config['best_model_path'],
-                log_path=self.config['log_path'],
-                eval_freq=self.config['eval_freq'],
-                deterministic=True,
-                render=False,
-                verbose=1
-            )
-            callbacks_list.append(train_callback)
-        
-        callbacks = CallbackList(callbacks_list)
+        # Combine callbacks into a CallbackList to ensure both evaluation and attention logging occur during training
+        callbacks = CallbackList([self.eval_callback, attention_callback])
         
         print(f"Training for {self.config['total_timesteps']} timesteps...")
-        print("  Attention logging enabled (training phase)")
-        if self.val_env is not None:
-            print("  Validation monitoring enabled (hyperparameter selection)")
+        print(" Attention logging enabled (training phase)")
         self.model.learn(total_timesteps=self.config["total_timesteps"], callback=callbacks)
         print(" Training complete.")
         
         # ===== EVALUATION PHASE WITH ATTENTION LOGGING =====
         print("\n" + "="*80)
-        print("EVALUATION PHASE: Capturing attention on validation & test data")
+        print("EVALUATION PHASE: Capturing attention on test data (2021-2024)")
         print("="*80)
         
         try:

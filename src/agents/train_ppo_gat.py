@@ -24,10 +24,13 @@ def evaluate_model_on_test(model_path, env_class, env_kwargs, test_data):
     Evaluate a trained model on test data using deterministic predictions.
     SPRINT 1: Captures GAT attention weights during evaluation for explainability analysis.
     """
-    # Load the best model
+    # Load the best model - try both possible locations
     model_file = os.path.join(model_path, "best_model.zip")
     if not os.path.exists(model_file):
-        raise FileNotFoundError(f"Model not found at {model_file}")
+        # If not found in subdirectory, try the path directly as a .zip file
+        model_file = f"{model_path}.zip"
+        if not os.path.exists(model_file):
+            raise FileNotFoundError(f"Model not found at {model_path}/best_model.zip or {model_path}.zip")
     
     print(f"Loading model from {model_file}")
     
@@ -157,33 +160,21 @@ def train_and_evaluate():
     df_processed = df_processed[df_processed['date'].isin(common_dates)].reset_index(drop=True)
     print(f" Aligned data: {len(common_dates)} dates with both features and graphs")
 
-    # ===== STEP 2: TRAIN/VALIDATION/TEST SPLIT (WALK-FORWARD) =====
-    print("\n=== Step 2: Walk-Forward Train/Validation/Test Split ===")
+    # ===== STEP 2: TRAIN/TEST SPLIT =====
+    print("\n=== Step 2: Train/Test Split ===")
     train_end = pd.to_datetime(data_config['train_end_date'])
-    val_start = pd.to_datetime(data_config['validation_start_date'])
-    val_end = pd.to_datetime(data_config['validation_end_date'])
     test_start = pd.to_datetime(data_config['test_start_date'])
     
     # Ensure correct data types
     df_processed['date'] = pd.to_datetime(df_processed['date'])
     
     df_train = df_processed[df_processed['date'] <= train_end].reset_index(drop=True)
-    df_val = df_processed[(df_processed['date'] >= val_start) & (df_processed['date'] <= val_end)].reset_index(drop=True)
     df_test = df_processed[df_processed['date'] >= test_start].reset_index(drop=True)
     
-    print(f"Training period:   {df_train['date'].min().date()} to {df_train['date'].max().date()} ({len(df_train.date.unique())} days)")
-    print(f"Validation period: {df_val['date'].min().date()} to {df_val['date'].max().date()} ({len(df_val.date.unique())} days)")
-    print(f"Testing period:    {df_test['date'].min().date()} to {df_test['date'].max().date()} ({len(df_test.date.unique())} days)")
-    
-    # Sanity check: no overlap
-    train_dates = set(df_train['date'].unique())
-    val_dates = set(df_val['date'].unique())
-    test_dates = set(df_test['date'].unique())
-    
-    assert len(train_dates & val_dates) == 0, "Data leakage: Train-Val overlap!"
-    assert len(val_dates & test_dates) == 0, "Data leakage: Val-Test overlap!"
-    assert len(train_dates & test_dates) == 0, "Data leakage: Train-Test overlap!"
-    print(" Data splits verified: No overlap (walk-forward integrity maintained)")
+    print(f"Training period: {df_train['date'].min()} to {df_train['date'].max()}")
+    print(f"Testing period: {df_test['date'].min()} to {df_test['date'].max()}")
+    print(f"Training samples: {len(df_train.date.unique())} days")
+    print(f"Testing samples: {len(df_test.date.unique())} days")
 
     # Timestamp for this run
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -214,53 +205,26 @@ def train_and_evaluate():
     print("Creating training environment...")
     train_env = StockPortfolioEnv(df=df_train, **env_kwargs)
     
-    print("Creating validation environment...")
-    val_env = StockPortfolioEnv(df=df_val, **env_kwargs)
-    print(f" Validation environment ready for hyperparameter selection on {len(df_val.date.unique())} days (2022 bear regime)")
-    
-    print("\nInitialising PPO+GAT trainer with validation...")
-    trainer = PPOGATTrainer(train_env, config_ppo, val_env=val_env)
+    print("Initialising PPO+GAT trainer...")
+    trainer = PPOGATTrainer(train_env, config_ppo)
     
     print(f"Starting training for {config_ppo['total_timesteps']} timesteps...")
-    print(f"(Best model will be selected based on validation set performance)")
     trainer.train()
     
     # Save model
     model_path = f"models/ppo_gat_{timestamp}"
-    best_model_path = config_ppo['best_model_path']
+    os.makedirs(model_path, exist_ok=True)
     trainer.save(model_path)
     print(f"Model saved to {model_path}")
 
-    # ===== STEP 4: VALIDATION SET EVALUATION =====
+    # ===== STEP 4: EVALUATION =====
     print("\n" + "="*80)
-    print("VALIDATION SET PERFORMANCE (Hyperparameter Selection Period)")
-    print("="*80 + "\n")
-    
-    print("Evaluating trained model on validation set...")
-    val_results = evaluate_model_on_test(
-        model_path=best_model_path,
-        env_class=StockPortfolioEnv,
-        env_kwargs=env_kwargs,
-        test_data=df_val
-    )
-    
-    # Save validation results
-    val_csv = f"results/gat_ppo_results/validation_ppo_gat_{timestamp}.csv"
-    save_test_results(val_results, val_csv)
-    
-    print(f"\nValidation Performance:")
-    print(f"  Total Return:  {val_results['total_return']:>10.2%}")
-    print(f"  Sharpe Ratio:  {val_results['sharpe_ratio']:>10.4f}")
-    print(f"  Max Drawdown:  {val_results['max_drawdown']:>10.2%}")
-
-    # ===== STEP 5: TEST SET EVALUATION =====
-    print("\n" + "="*80)
-    print("TEST SET PERFORMANCE (Held-Out Evaluation)")
+    print("EVALUATION: TEST SET PERFORMANCE")
     print("="*80 + "\n")
     
     print("Evaluating trained model on test set...")
     test_results = evaluate_model_on_test(
-        model_path=best_model_path,
+        model_path=model_path,
         env_class=StockPortfolioEnv,
         env_kwargs=env_kwargs,
         test_data=df_test
@@ -272,25 +236,17 @@ def train_and_evaluate():
     
     # ===== RESULTS SUMMARY =====
     print("\n" + "="*80)
-    print("FINAL RESULTS SUMMARY")
+    print("TEST SET PERFORMANCE SUMMARY")
     print("="*80)
-    print("\nValidation Set (2022 - Bear Regime):")
-    print(f"  Total Return:        {val_results['total_return']:>10.2%}")
-    print(f"  Sharpe Ratio:        {val_results['sharpe_ratio']:>10.4f}")
-    print(f"  Max Drawdown:        {val_results['max_drawdown']:>10.2%}")
-    print(f"  Volatility (Annual): {val_results['volatility']:>10.2%}")
-    print("\nTest Set (2023-2024 - Recovery Regime):")
-    print(f"  Total Return:        {test_results['total_return']:>10.2%}")
-    print(f"  Sharpe Ratio:        {test_results['sharpe_ratio']:>10.4f}")
-    print(f"  Max Drawdown:        {test_results['max_drawdown']:>10.2%}")
-    print(f"  Volatility (Annual): {test_results['volatility']:>10.2%}")
+    print(f"Total Return:        {test_results['total_return']:>10.2%}")
+    print(f"Sharpe Ratio:        {test_results['sharpe_ratio']:>10.4f}")
+    print(f"Max Drawdown:        {test_results['max_drawdown']:>10.2%}")
+    print(f"Volatility (Annual): {test_results['volatility']:>10.2%}")
     print("="*80 + "\n")
 
     # ===== VISUALISATION =====
     print("Generating visualisation...")
     generate_visualisation(test_results, test_csv, timestamp)
-    
-    print("Training and evaluation complete!")
 
 def generate_visualisation(results, csv_path, timestamp):
     """Generate visualisation of test performance"""

@@ -52,5 +52,4 @@ class EvaluationAttentionCallback(BaseCallback):
     
     def _on_training_end(self) -> None:
         """Called when evaluation ends."""
-        # Evaluation buffer is saved by the environment's step logic
         pass

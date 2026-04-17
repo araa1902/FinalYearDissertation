@@ -6,13 +6,8 @@ from src.gat.gat import GAT
 import yaml
 
 """
-GATFeatureExtractor
 ----------------------------------------------
 This module extracts features for the PPO agent using a Graph Attention Network.
-CRITICAL: It maintains TRUE INDEPENDENCE between:
-1. The Graph Topology (Derived from Historical Pearson Correlation)
-2. The Node Features (Derived from Technical Indicators)
-
 This decoupling prevents circular logic and allows the GAT to learn 
 relationships between 'Market Structure' and 'Price Action'.
 """

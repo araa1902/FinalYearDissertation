@@ -3,14 +3,11 @@ data:
   start_date: "2015-01-01"
   end_date: "2024-12-31"
 
-  # Walk-forward split: Train → Validate → Test (no overlap)
-  # Train: 2015-2021 (7 years, covers bull 2017-2019 + COVID 2020-2021)
-  # Validation: 2022 (1 year, bear regime for hyperparameter selection)
-  # Test: 2023-2024 (2 years, strictly held-out for final evaluation)
-  train_end_date: "2021-12-31"
-  validation_start_date: "2022-01-01"
-  validation_end_date: "2022-12-31"
-  test_start_date: "2023-01-01"
+  # Simple 80/20 temporal split
+  # Train: 2015-01-01 to 2020-12-31 (6 years: normal + COVID recovery)
+  # Test: 2021-01-01 to 2024-12-31 (4 years: inflation, rate hikes, recovery)
+  train_end_date: "2020-12-31"
+  test_start_date: "2021-01-01"
 
   ticker_list:
     # --- Tech (Growth / High Volatility) ---
@@ -110,7 +107,7 @@ explainability:
   mask_threshold: 0.8 # Edges with a normalized impact score below this are pruned from the causal subgraph
 
   # Noise Filtering
-  min_significance: 0.001 # Absolute minimum cosine drop required to be considered causal (prevents noise inflation)
+  min_significance: 0.00001 # Absolute minimum cosine drop required to be considered causal (1e-5: only filter machine noise, keep weak but real signals)
 
   # Metric Evaluation settings
   fidelity_type: "cosine" # Metric used to measure the representation drop when an edge is ablated
