@@ -21,15 +21,6 @@ from datetime import datetime
 def evaluate_model_on_test(model_path, env_class, env_kwargs, test_data):
     """
     Evaluate a trained model on test data.
-    
-    Args:
-        model_path: Path to the best model directory
-        env_class: Environment class (StockPortfolioEnv or StockPortfolioEnvBaseline)
-        env_kwargs: Environment kwargs
-        test_data: Test dataframe
-    
-    Returns:
-        Dictionary with evaluation metrics
     """
     # Load the best model
     model_file = os.path.join(model_path, "best_model.zip")

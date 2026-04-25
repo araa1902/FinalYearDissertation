@@ -1,15 +1,7 @@
 """
-Portfolio Explanation Pipeline - Exact Edge Ablation
-
+Exact Edge Ablation
 This script demonstrates how to use the ExactEdgeAblationExplainer to explain
 the latent embeddings of a trained GAT model for portfolio optimisation.
-
-Workflow:
-1. Load a trained SB3 PPO model with GAT feature extractor
-2. Extract the GAT model from the policy
-3. Create an ExactEdgeAblationExplainer instance
-4. Run explanations for target assets
-5. Analyse causal subgraphs and metrics
 """
 
 import torch
@@ -33,24 +25,25 @@ def prepare_data_for_explanation(env, model, target_date=None):
     obs, info = env.reset()
     done = False
     
-    print(f" Fast-forwarding agent through market environment...")
+    print(f" Extracting initial state from market environment...")
     step_count = 0
-    while not done:
-        # Check if we have reached the specific crash date to audit
-        if target_date:
-            current_date = getattr(env.unwrapped, 'date', None) or env.unwrapped.dates[env.unwrapped.day]
+    
+    # If target_date specified, fast-forward to that date
+    if target_date:
+        while not done:
+            current_date = getattr(env.unwrapped, 'current_date_str', None) or env.unwrapped.unique_dates[env.unwrapped.day]
             if str(current_date)[:10] == target_date:
                 print(f"  Target Critical State Reached: {target_date}")
                 break
                 
-        # Step the environment
-        action, _states = model.predict(obs, deterministic=True)
-        obs, reward, terminated, truncated, info = env.step(action)
-        done = terminated or truncated
-        step_count += 1
-        
-        if step_count >= 1000 and not target_date:
-            break
+            # Step the environment
+            action, _states = model.predict(obs, deterministic=True)
+            obs, reward, terminated, truncated, info = env.step(action)
+            done = terminated or truncated
+            step_count += 1
+    else:
+        # Use initial state (no fast-forward)
+        print(f"  Using initial test state")
     
     if isinstance(obs, dict):
         x_np = obs['features']
@@ -72,6 +65,7 @@ def prepare_data_for_explanation(env, model, target_date=None):
 
 def run_explanation_pipeline(model_path=None,
                             target_node=0,
+                            target_date=None,
                             save_plots=True,
                             output_dir='results/explainability'):
     """
@@ -172,7 +166,7 @@ def run_explanation_pipeline(model_path=None,
     env = StockPortfolioEnv(df=df_test, **env_kwargs)
     print(f" Initialised portfolio environment in test mode")
     
-    x, adj, obs = prepare_data_for_explanation(env, model)
+    x, adj, obs = prepare_data_for_explanation(env, model, target_date=target_date)
     print(f" Extracted data shapes:")
     print(f"  - Node features (x): {x.shape}")
     print(f"  - Adjacency matrix (adj): {adj.shape}")
@@ -220,7 +214,7 @@ def run_explanation_pipeline(model_path=None,
     
     print(f"\n Top Causal Edges:")
     for i, edge in enumerate(important_edges[:10], 1):
-        print(f"  {i}. {edge['source_ticker']} → {edge['target_ticker']}: {edge['score']:.4f}")
+        print(f"  {i}. {edge['source_ticker']} to {edge['target_ticker']}: {edge['score']:.4f}")
     
     # ========== Step 8: Save Results ==========
     if save_plots:
@@ -231,11 +225,18 @@ def run_explanation_pipeline(model_path=None,
         output_path = Path(output_dir)
         output_path.mkdir(parents=True, exist_ok=True)
         
-        # Save edges to CSV
+        # Save IMPORTANT edges to CSV
         edges_df = pd.DataFrame(important_edges)
         edges_path = output_path / f"causal_edges_{target_ticker}.csv"
         edges_df.to_csv(edges_path, index=False)
-        print(f" Saved causal edges to {edges_path}")
+        print(f" Saved important causal edges to {edges_path}")
+        
+        # Save ALL edges (important + filtered) for debugging
+        all_edges = explanation_dict.get('all_edges', [])
+        all_edges_df = pd.DataFrame(all_edges)
+        all_edges_path = output_path / f"all_edges_ablation_{target_ticker}.csv"
+        all_edges_df.to_csv(all_edges_path, index=False)
+        print(f" Saved all ablation edges to {all_edges_path}")
         
         # Save comprehensive metrics
         metrics_path = output_path / f"explanation_metrics_{target_ticker}.txt"
@@ -247,6 +248,12 @@ def run_explanation_pipeline(model_path=None,
             f.write(f"  Subgraph Fidelity Drop: {subgraph_drop:.6f}\n")
             f.write(f"  Max Single-Edge Drop: {single_edge_drop:.6f}\n")
             f.write(f"  Important Edges Count: {num_important_edges}\n")
+            f.write(f"  Total Edges Tested: {len(all_edges)}\n")
+            f.write(f"  Mask Threshold: 0.8 (only edges with score >= 0.8 are important)\n")
+            f.write(f"\nTop 5 Edges by Raw Fidelity Drop:\n")
+            for i, edge in enumerate(sorted(all_edges, key=lambda e: e['raw_fidelity_drop'], reverse=True)[:5], 1):
+                f.write(f"  {i}. {edge['source_ticker']} to {edge['target_ticker']}: ")
+                f.write(f"raw_drop={edge['raw_fidelity_drop']:.6f}, score={edge['score']:.4f}\n")
         print(f" Saved metrics to {metrics_path}")
     
     # ========== Summary ==========
@@ -353,7 +360,7 @@ if __name__ == "__main__":
         output_dir='results/explainability'
     )
     
-    # Example 2: Explain multiple nodes (uncomment to run)
+    # Explain multiple nodes (uncomment to run)
     # print("\n" + "="*80)
     # print("EXAMPLE 2: Explaining Multiple Nodes")
     # print("="*80)

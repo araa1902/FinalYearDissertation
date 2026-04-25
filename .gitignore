@@ -89,3 +89,4 @@ data/raw/
 .pytest_cache/
 .mypy_cache/
 .coverage
+*.log

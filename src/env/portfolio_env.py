@@ -319,7 +319,7 @@ class StockPortfolioEnv(gym.Env):
         if len(self.recent_returns) > self.volatility_lookback:
             self.recent_returns.pop(0)
         
-        # 3. Calculate rolling volatility (penalises erratic behavior)
+        # 3. Calculate rolling volatility (penalises erratic behaviour)
         if len(self.recent_returns) > 1:
             volatility = np.std(self.recent_returns)
         else:

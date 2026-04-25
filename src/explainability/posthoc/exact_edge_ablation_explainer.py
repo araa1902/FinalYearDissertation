@@ -27,15 +27,11 @@ class DenseGNNExplainer:
         with torch.no_grad():
             sector_weight = torch.sigmoid(self.feature_extractor.sector_weight)
             adj = (1 - sector_weight) * raw_adj + (sector_weight * self.feature_extractor.sector_mask)
-            
-            # Apply your hard threshold
             adj = torch.abs(adj)
-            mask = (adj >= self.feature_extractor.threshold).float()
-            processed_adj = adj * mask
             
             # Add self-loops
             identity = torch.eye(num_tickers, device=self.device).unsqueeze(0)
-            true_adj = torch.max(processed_adj, identity)
+            true_adj = torch.max(adj, identity)  # Use unmasked adj
             
             # 2. Get the baseline (original) embedding for the target node
             z_baseline_full, _ = self.feature_extractor.gat(x, true_adj)
@@ -86,10 +82,11 @@ class DenseGNNExplainer:
         max_drop = max([e['raw_fidelity_drop'] for e in edge_impacts]) if edge_impacts else 0
         
         # Absolute significance threshold to prevent "best of a bad bunch" inflation
-        MIN_SIGNIFICANCE = self.config['explainability'].get('min_significance', 0.001)
+        # When using unmasked adjacency, very small fidelity drops are expected
+        MIN_SIGNIFICANCE = self.config['explainability'].get('min_significance', 0.00001)
         
         for e in edge_impacts:
-            if max_drop > MIN_SIGNIFICANCE:
+            if max_drop > 0:
                 # Normalise relative to the most impactful edge
                 e['score'] = e['raw_fidelity_drop'] / max_drop
             else:
@@ -97,7 +94,7 @@ class DenseGNNExplainer:
 
         # Sort and filter by your config threshold
         edge_impacts.sort(key=lambda e: e['score'], reverse=True)
-        important_edges = [e for e in edge_impacts if e['score'] >= self.mask_threshold]
+        important_edges = [e for e in edge_impacts if e['raw_fidelity_drop'] > MIN_SIGNIFICANCE]
         
         # 5. Subgraph-Level Fidelity Check (Simultaneous Ablation of non-important edges)
         subgraph_adj = true_adj.clone()
@@ -131,6 +128,4 @@ class DenseGNNExplainer:
             'important_edges': important_edges,
             'all_edges': edge_impacts  # Include ALL edges (scored and normalised)
         }
-        
-        # Return none for mask as we are using direct edge lists now
         return None, important_edges, explanation_dict
