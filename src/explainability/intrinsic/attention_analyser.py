@@ -6,7 +6,7 @@ import pickle
 from typing import Dict, List, Tuple, Optional
 
 
-class AttentionAnalyzer:
+class AttentionAnalyser:
     """
     Analyses GAT attention weights captured during training/evaluation.
     """
@@ -153,7 +153,7 @@ class AttentionAnalyzer:
                     ax=axes[1], vmin=0, vmax=1)
         axes[1].set_title(f"{stress_label}\n(Head {head_idx})", fontweight='bold')
         
-        # Difference (diverging colormap to show both increase and decrease)
+        # Difference (diverging colourmap to show both increase and decrease)
         sns.heatmap(diff, annot=True, fmt='.2f', cmap='RdBu_r',
                     square=True, cbar_kws={'label': 'Δ Attention'},
                     xticklabels=self.tickers, yticklabels=self.tickers,
@@ -298,11 +298,11 @@ class AttentionAnalyzer:
             
             print(f"\nNormal Regime - Top {top_k} Connections:")
             for i, (from_ticker, to_ticker, weight) in enumerate(focus_normal[head_idx], 1):
-                print(f"  {i}. {from_ticker:6s} → {to_ticker:6s}  {weight:.4f}")
+                print(f"  {i}. {from_ticker:6s} to {to_ticker:6s}  {weight:.4f}")
             
             print(f"\nStress Regime - Top {top_k} Connections:")
             for i, (from_ticker, to_ticker, weight) in enumerate(focus_stress[head_idx], 1):
-                print(f"  {i}. {from_ticker:6s} → {to_ticker:6s}  {weight:.4f}")
+                print(f"  {i}. {from_ticker:6s} to {to_ticker:6s}  {weight:.4f}")
             
             print(f"\nKey Observations:")
             # Find connections that changed importance
@@ -312,26 +312,26 @@ class AttentionAnalyzer:
             for (f, t), w_stress in stress_dict.items():
                 w_normal = normal_dict.get((f, t), 0)
                 if w_stress > w_normal:
-                    print(f"   {f} → {t}: +{(w_stress - w_normal):.4f} (NEW FOCUS)")
+                    print(f"   {f} to {t}: +{(w_stress - w_normal):.4f} (NEW FOCUS)")
         
         print("\n" + "="*80 + "\n")
 
 
 def main_example():
-    """Example usage of AttentionAnalyzer."""
+    """Example usage of AttentionAnalyser."""
     # Load buffer
-    analyzer = AttentionAnalyzer(
+    analyser = AttentionAnalyser(
         attention_buffer_path='results/attention_logs/attention_buffer_20260208_225516.pkl',
         tickers=['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA']
     )
     
     # Get attention for specific dates
-    attn_normal = analyzer.get_attention_for_date('2022-09-27')  # Day before crash
-    attn_crash = analyzer.get_attention_for_date('2022-09-28')   # Crash day
+    attn_normal = analyser.get_attention_for_date('2022-09-27')  # Day before crash
+    attn_crash = analyser.get_attention_for_date('2022-09-28')   # Crash day
     
     if attn_normal is not None and attn_crash is not None:
         # Plot comparison
-        fig = analyzer.plot_attention_comparison(
+        fig = analyser.plot_attention_comparison(
             attn_normal, attn_crash,
             normal_label="Sept 27, 2022 (Normal)",
             crash_label="Sept 28, 2022 (Crash)",
@@ -339,12 +339,12 @@ def main_example():
         )
         
         # Print statistics
-        stats_df = analyzer.compare_statistics(attn_normal, attn_crash)
+        stats_df = analyser.compare_statistics(attn_normal, attn_crash)
         print("\nAttention Statistics Comparison:")
         print(stats_df)
         
         # Focus shift analysis
-        analyzer.print_focus_analysis(attn_normal, attn_crash)
+        analyser.print_focus_analysis(attn_normal, attn_crash)
 
 
 if __name__ == "__main__":
