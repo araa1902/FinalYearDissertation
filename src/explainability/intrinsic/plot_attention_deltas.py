@@ -38,10 +38,10 @@ _PALETTE: Dict[str, str] = {
     "grid":       "#E5E7EB",       # light neutral grid
     "border":     "#D1D5DB",
     "zero_line":  "#9CA3AF",       # visible but unobtrusive zero rule
-    "amp":        "#D6232A",       # amplification — saturated red
-    "amp_light":  "#FDECEA",       # amp bar background band
-    "att":        "#1A6EBD",       # attenuation — saturated blue
-    "att_light":  "#EBF3FB",       # att bar background band
+    "amp":        "#1A6EBD",       # amplification — blue
+    "amp_light":  "#EBF3FB",       # amp bar background band
+    "att":        "#D6232A",       # attenuation — red
+    "att_light":  "#FDECEA",       # att bar background band
     "rank_text":  "#FFFFFF",       # rank badge text
 }
 
@@ -161,7 +161,7 @@ class AttentionDeltasVisualizer:
         panel_letter = "(a)" if is_amp else "(b)"
         panel_label  = "Top-10 Amplifications" if is_amp else "Top-10 Attenuations"
 
-        labels = [f"{e['source']} to {e['target']}" for e in edges]
+        labels = [f"{e['source']} → {e['target']}" for e in edges]
         values = [e["delta"] for e in edges]
         y_pos  = np.arange(len(labels))
 
@@ -247,6 +247,7 @@ class AttentionDeltasVisualizer:
         print(f"\n{sep}\nATTENTION WEIGHT CHANGES (Baseline to Stress)\n{sep}")
         if "Baseline" in self.regimes and "Stress" in self.regimes:
             delta = self.regimes["Stress"] - self.regimes["Baseline"]
+            np.fill_diagonal(delta, 0) # Exclude self-loops
             print(f"  Mean Δα        : {delta.mean():.4f}")
             print(f"  Amplifications : {(delta > 0).sum()} edges")
             print(f"  Attenuations   : {(delta < 0).sum()} edges")
