@@ -17,12 +17,17 @@ ENV/
 tensorboard/
 
 # ============================================================
-# ALLOW EVERYTHING (Results, Models, Data)
+# ALLOW Main Results, Models, Data
 # ============================================================
-# We are intentionally tracking these for the final submission backup
 !results/
 !models/
 !data/raw/
+
+# ============================================================
+# EXCLUDE HEAVY LOGS (Saves 250MB for faster GitHub push)
+# ============================================================
+results/attention_logs/*
+!results/attention_logs/.gitkeep
 
 # ============================================================
 # Testing / cache
