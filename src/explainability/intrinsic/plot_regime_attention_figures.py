@@ -49,11 +49,11 @@ mpl.rcParams.update({
     "text.color":             _PALETTE["text"],
     "font.family":            "sans-serif",
     "font.sans-serif":        [_FONT_FAMILY, "Arial", "Helvetica"],
-    "font.size":              10,
-    "axes.titlesize":         12,
-    "axes.labelsize":         11,
-    "xtick.labelsize":        9,
-    "ytick.labelsize":        9,
+    "font.size":              14,
+    "axes.titlesize":         18,
+    "axes.labelsize":         16,
+    "xtick.labelsize":        14,
+    "ytick.labelsize":        14,
     "figure.dpi":             150,
     "savefig.dpi":            300,
     "savefig.bbox":           "tight",
@@ -183,37 +183,38 @@ class RegimeAttentionVisualiser:
                     "shrink": 0.68,
                     "pad":    0.02,
                 },
-                annot_kws={"size": 13, "weight": "bold", "color": "#111111"},
+                annot_kws={"size": 16, "weight": "bold", "color": "#111111"},
             )
 
             # ---- colourbar font ----
             cbar = ax.collections[0].colorbar
-            cbar.ax.yaxis.label.set_fontsize(10)
-            cbar.ax.tick_params(labelsize=9)
+            cbar.ax.yaxis.label.set_fontsize(16)
+            cbar.ax.yaxis.label.set_fontweight("bold")
+            cbar.ax.tick_params(labelsize=14)
 
             # ---- title (only metrics, no label/subtitle) ----
             ax.set_title(
                 rf"max $\alpha$ = {stats['max']:.4f}  |  "
                 f"Sparsity = {stats['sparsity']:.1f}%",
-                fontsize=18,
+                fontsize=22,
                 fontweight="bold",
                 color=panel["title_color"],
-                pad=15,
+                pad=20,
                 loc="center",
             )
 
             # ---- axis labels ----
             ax.set_xlabel("Target Asset (Impacted)",
-                          fontsize=20, fontweight="bold", labelpad=10)
+                          fontsize=24, fontweight="bold", labelpad=12)
             ax.set_ylabel("Source Asset (Influence)",
-                          fontsize=20, fontweight="bold", labelpad=10)
+                          fontsize=24, fontweight="bold", labelpad=12)
 
             # ---- tick labels ----
             ax.set_xticklabels(
-                ax.get_xticklabels(), rotation=45, ha="right", fontsize=12, fontweight="bold"
+                ax.get_xticklabels(), rotation=45, ha="right", fontsize=16, fontweight="bold"
             )
             ax.set_yticklabels(
-                ax.get_yticklabels(), rotation=0, fontsize=12, fontweight="bold"
+                ax.get_yticklabels(), rotation=0, fontsize=16, fontweight="bold"
             )
 
             ax.set_facecolor(_PALETTE["axes_bg"])
@@ -271,7 +272,7 @@ class RegimeAttentionVisualiser:
             0.5, 0.01,
             r"Attention Weight Change  $\Delta\alpha_{ij}$",
             ha="center", va="bottom",
-            fontsize=16, fontweight="bold", color=_PALETTE["text"],
+            fontsize=20, fontweight="bold", color=_PALETTE["text"],
         )
 
         fig.tight_layout(rect=[0, 0.04, 1, 0.95])
@@ -316,20 +317,21 @@ class RegimeAttentionVisualiser:
                 x, bar.get_y() + bar.get_height() / 2,
                 f"{val:+.4f}",
                 va="center", ha=ha,
-                fontsize=9, fontweight="bold",
+                fontsize=13, fontweight="bold",
                 color=_PALETTE["text"],
             )
 
         # Axes configuration
         ax.set_yticks(y_pos)
-        ax.set_yticklabels(labels, fontsize=10, color=_PALETTE["text"])
+        ax.set_yticklabels(labels, fontsize=14, fontweight="bold", color=_PALETTE["text"])
         ax.invert_yaxis()   # rank-1 at the top
 
         ax.xaxis.set_major_formatter(mticker.FormatStrFormatter("%.3f"))
         ax.xaxis.set_major_locator(mticker.MaxNLocator(nbins=5, symmetric=True))
+        ax.tick_params(axis='x', labelsize=12)
 
-        ax.set_title(title, fontsize=12, fontweight="bold",
-                     color=_PALETTE["text"], pad=14, loc="center")
+        ax.set_title(title, fontsize=18, fontweight="bold",
+                     color=_PALETTE["text"], pad=18, loc="center")
 
         # Zero reference line
         ax.axvline(0, color=_PALETTE["text"], linewidth=0.9,
