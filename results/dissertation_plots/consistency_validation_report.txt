@@ -1,0 +1,39 @@
+====================================================================================================
+CONSISTENCY VALIDATION REPORT
+extract_table_values.py vs audit_pathway_figure.py
+====================================================================================================
+Status: PASSED
+
+Summary: 10 passed, 0 warnings, 0 errors
+
+PASSED CHECKS:
+----------------------------------------------------------------------------------------------------
+  ✅ Data prepared successfully for 2023-03-10 00:00:00
+  ✅ Trained model loaded successfully
+  ✅ Sparsity matches: 0.846154
+  ✅ Max single edge drop matches: 0.000149
+  ✅ Subgraph fidelity drop matches: 0.000154
+  ✅ Causal edge count matches: 2
+  ✅ Total edge count matches: 13
+  ✅ Baseline embeddings match (||Δz|| = 0.0000000000)
+  ✅ All 13 edge values match exactly
+  ✅ Causal subgraph is identical: ['GS', 'JNJ']
+
+METRICS COMPARISON:
+----------------------------------------------------------------------------------------------------
+  sparsity: ✓
+    P1: 0.8461538461538461
+    P2: 0.8461538461538461
+  max_single_drop: ✓
+    P1: 0.00014865398406982422
+    P2: 0.00014865398406982422
+  subgraph_drop: ✓
+    P1: 0.0001544952392578125
+    P2: 0.0001544952392578125
+  causal_edges: ✓
+    P1: 2
+    P2: 2
+  total_edges: ✓
+    P1: 13
+    P2: 13
+

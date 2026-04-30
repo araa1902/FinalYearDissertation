@@ -1,0 +1,23 @@
+ABLATION STUDY: Model Directory Mapping
+================================================================================
+
+Mode: full
+  Model Dir: models/ablation_full_20260417_160551
+  Best Model: models/ablation_full_20260417_160551/best_model.zip
+  Final Model: models/ablation_full_20260417_160551/final_model.zip
+
+Mode: no_signal_independence
+  Model Dir: models/ablation_no_signal_independence_20260417_160954
+  Best Model: models/ablation_no_signal_independence_20260417_160954/best_model.zip
+  Final Model: models/ablation_no_signal_independence_20260417_160954/final_model.zip
+
+Mode: no_sector_blending
+  Model Dir: models/ablation_no_sector_blending_20260417_161352
+  Best Model: models/ablation_no_sector_blending_20260417_161352/best_model.zip
+  Final Model: models/ablation_no_sector_blending_20260417_161352/final_model.zip
+
+Mode: no_both
+  Model Dir: models/ablation_no_both_20260417_161743
+  Best Model: models/ablation_no_both_20260417_161743/best_model.zip
+  Final Model: models/ablation_no_both_20260417_161743/final_model.zip
+

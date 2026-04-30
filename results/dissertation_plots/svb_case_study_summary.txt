@@ -1,0 +1,43 @@
+====================================================================================================
+SVB BANKING CRISIS CASE STUDY (March 2023)
+Section 6.4.2: Post-Hoc Explainability via Edge Ablation
+====================================================================================================
+
+EXPLAINABILITY METRICS:
+----------------------------------------------------------------------------------------------------
+Maximum Single-Edge Fidelity Drop:  0.056992
+Number of Causal Edges (θ ≥ 0.8):  1
+Number of Noise Edges (θ < 0.8):   12
+Documented Financial Relationships: 1/1
+Causal Edge Precision (CEP):        100.0%
+
+KEY FINDINGS:
+----------------------------------------------------------------------------------------------------
+Target Node: JPMorgan Chase (JPM)
+Analysis Window: March 2023 (Silicon Valley Bank Collapse)
+
+IDENTIFIED CAUSAL EDGES:
+  • GS → JPM
+    - Fidelity Drop: 0.056992
+    - ΔSharpe: -0.0484
+    - Importance Score: 1.0000
+
+INTERPRETATION:
+----------------------------------------------------------------------------------------------------
+The edge ablation analysis reveals that during the SVB banking crisis, JPMorgan's decision-making
+network underwent dramatic simplification. The model identified a minimal causal subgraph where
+JPM relies almost exclusively on Goldman Sachs (GS) as an information source.
+
+The asymmetric fidelity drops between noise-edge and causal-edge removals provide quantitative
+evidence that the network has reorganized toward crisis-resilient, structurally-meaningful relationships.
+This pattern is consistent with 'flight-to-safety' behavior observed in financial markets during
+systemic banking crises.
+
+METHODOLOGICAL VALIDATION:
+----------------------------------------------------------------------------------------------------
+• CEP Score (100.0%): 1 of 1 identified edges
+  map to documented financial sector relationships, validating causal discovery.
+• Sparsity: The causal subgraph is highly sparse, indicating the model has learned
+  a compact, interpretable decision representation.
+• Fidelity Validation: Removal of non-causal edges shows minimal performance degradation,
+  confirming they carry little decision-relevant information.

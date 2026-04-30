@@ -1,0 +1,5 @@
+Model,Bull Market,Bear Market,High-Volatility Crisis
+1/N Baseline,-0.101775,-0.187171,-0.049491
+Vanilla PPO,-0.082975,-0.195958,-0.042005
+GCN (Static),-0.092715,-0.178849,-0.033267
+GAT (Dynamic),-0.093705,-0.180981,-0.035219

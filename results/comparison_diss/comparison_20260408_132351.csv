@@ -1,0 +1,5 @@
+Metric,Baseline (No GAT),GAT Model,Improvement
+Total Return,42.84%,100.62%,57.77%
+Sharpe Ratio,0.7140,1.3528,0.6387
+Max Drawdown,-23.27%,-18.93%,4.35%
+Volatility,13.32%,13.08%,-0.24%

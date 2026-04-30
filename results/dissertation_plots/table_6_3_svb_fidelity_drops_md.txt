@@ -1,0 +1,22 @@
+### Table 6.3 — Edge Ablation Fidelity Drops (JPM, SVB Crisis Window)
+
+**Causal Edges** (Threshold θ ≥ 0.8):
+
+| Edge Removed | Edge Type | Raw Fidelity Drop | Policy Performance Drop (ΔSharpe) |
+|---|---|---:|---:|
+| GS → JPM | causal | 0.056992 | -0.0484 |
+
+**Noise Edges** (Threshold θ < 0.8):
+
+| Edge Removed | Edge Type | Raw Fidelity Drop | Policy Performance Drop (ΔSharpe) |
+|---|---|---:|---:|
+| ... (12 zero-impact edges) | noise | 0.0 | 0.0 |
+
+#### Explainability Metrics
+
+- **Maximum Single-Edge Fidelity Drop:** 0.056992
+- **Causal Edges Identified:** 1
+- **Documented Financial Relationships:** 1/1
+- **Causal Edge Precision (CEP):** 100.0%
+
+**Interpretation:** The asymmetry between noise-edge removals and the GS → JPM causal edge removal (fidelity drop = 0.056992) demonstrates that the ablation framework successfully isolated a structurally meaningful subgraph. During the SVB crisis, JPMorgan's decision-making simplified to rely almost exclusively on Goldman Sachs as an information source, highlighting the flight-to-safety behavior and reinforced institutional interconnectedness.

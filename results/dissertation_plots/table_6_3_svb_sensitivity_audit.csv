@@ -1,0 +1,14 @@
+Edge,Source_Sector,Soft_Attention_Alpha,Embedding_Fidelity_Drop,Action_Divergence,Estimated_ΔSharpe,Classification,Justification
+CAT→JPM,IND,0.18004094,0.00032651,0.00000669,0.00000294,NOISE,Low ΔSharpe despite moderate attention
+GS→JPM,FIN,0.11498050,-0.00000012,0.00000000,0.00000000,NOISE,Low ΔSharpe despite moderate attention
+JNJ→JPM,HLTH,0.10139293,0.00136107,0.00000138,0.00000690,NOISE,Low ΔSharpe despite moderate attention
+AAPL→JPM,TECH,0.00000000,-0.00000012,0.00000000,0.00000000,NOISE,Near-zero attention → negligible impact
+MSFT→JPM,TECH,0.00000000,-0.00000012,0.00000000,0.00000000,NOISE,Near-zero attention → negligible impact
+NVDA→JPM,TECH,0.00000000,-0.00000012,0.00000000,0.00000000,NOISE,Near-zero attention → negligible impact
+PFE→JPM,HLTH,0.00000000,-0.00000012,0.00000000,0.00000000,NOISE,Near-zero attention → negligible impact
+WMT→JPM,CONS,0.00000000,-0.00000012,0.00000000,0.00000000,NOISE,Near-zero attention → negligible impact
+KO→JPM,CONS,0.00000000,-0.00000012,0.00000000,0.00000000,NOISE,Near-zero attention → negligible impact
+XOM→JPM,ENRG,0.00000000,-0.00000012,0.00000000,0.00000000,NOISE,Near-zero attention → negligible impact
+CVX→JPM,ENRG,0.00000000,-0.00000012,0.00000000,0.00000000,NOISE,Near-zero attention → negligible impact
+GLD→JPM,COMM,0.00000000,-0.00000012,0.00000000,0.00000000,NOISE,Near-zero attention → negligible impact
+TLT→JPM,BOND,0.00000000,-0.00000012,0.00000000,0.00000000,NOISE,Near-zero attention → negligible impact

@@ -1,0 +1,17 @@
+Explanation for: XOM
+Target Node Index: 9
+
+Quality Metrics:
+  Sparsity: 0.9231
+  Subgraph Fidelity Drop: 0.006285
+  Max Single-Edge Drop: 0.054120
+  Important Edges Count: 1
+  Total Edges Tested: 13
+  Mask Threshold: 0.8 (only edges with score >= 0.8 are important)
+
+Top 5 Edges by Raw Fidelity Drop:
+  1. AAPL → XOM: raw_drop=0.054120, score=1.0000
+  2. CVX → XOM: raw_drop=0.001717, score=0.0317
+  3. KO → XOM: raw_drop=0.001646, score=0.0304
+  4. MSFT → XOM: raw_drop=0.000000, score=0.0000
+  5. NVDA → XOM: raw_drop=0.000000, score=0.0000

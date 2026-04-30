@@ -1,0 +1,31 @@
+2026-04-17 17:20:35 - [INFO] - ================================================================================
+2026-04-17 17:20:35 - [INFO] - ARCHITECTURE ABLATION STUDY
+2026-04-17 17:20:35 - [INFO] - Separating: SIM (Data) vs. Sector Blending (Network)
+2026-04-17 17:20:35 - [INFO] - ================================================================================
+2026-04-17 17:20:35 - [INFO] - Log file: logs/ablation_study_20260417_172035.log
+2026-04-17 17:20:35 - [INFO] - Overriding total_timesteps to 300000
+2026-04-17 17:20:35 - [INFO] - Seeds set for reproducibility
+2026-04-17 17:20:35 - [INFO] - 
+================================================================================
+2026-04-17 17:20:35 - [INFO] - STEP 1: DATA PREPARATION
+2026-04-17 17:20:35 - [INFO] - ================================================================================
+2026-04-17 17:20:36 - [INFO] - Data prepared successfully
+2026-04-17 17:20:36 - [INFO] - 
+================================================================================
+2026-04-17 17:20:36 - [INFO] - STEP 2: BUILDING GRAPHS FOR SIM ABLATION
+2026-04-17 17:20:36 - [INFO] - ================================================================================
+2026-04-17 17:20:36 - [INFO] - Building SIM-Active Graphs (Lagged by 1 day: [t-Tw, t-1])...
+2026-04-17 17:20:36 - [INFO] - ✓ Built 1438 SIM-active graphs
+2026-04-17 17:20:36 - [INFO] - Generating SIM-Ablated Graphs via Dictionary Shifting...
+2026-04-17 17:20:36 - [INFO] - ✓ Generated 1438 SIM-ablated graphs
+2026-04-17 17:20:36 - [INFO] - ✓ Shifted all keys forward by 1 day (removes temporal independence)
+2026-04-17 17:20:36 - [INFO] - 
+================================================================================
+2026-04-17 17:20:36 - [INFO] - STEP 3: TRAINING ALL ABLATION CONFIGURATIONS
+2026-04-17 17:20:36 - [INFO] - ================================================================================
+2026-04-17 17:20:36 - [INFO] - Total configurations: 4
+2026-04-17 17:20:36 - [INFO] - 
+[1/4] TRAINING: Full (Baseline)
+2026-04-17 17:20:36 - [INFO] -   Mode: full
+2026-04-17 17:20:36 - [INFO] -   Description: SIM active + Sector Blending active
+2026-04-17 17:20:36 - [INFO] -   Graph Set: SIM-ACTIVE (lagged by 1 day)

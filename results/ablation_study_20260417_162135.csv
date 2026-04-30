@@ -1,0 +1,5 @@
+Configuration,Sharpe Ratio,ΔSharpe vs. Full,Max Drawdown,ΔMDD vs. Full,PPD
+Full (Baseline),1.3071,+0.0000,-0.2554,+0.0000,$930.06
+w/o Signal Independence,1.3071,+0.0000,-0.2554,+0.0000,$930.06
+w/o Sector Blending,1.3260,+0.0189,-0.2595,-0.0041,$953.51
+w/o Both Mechanisms,1.3260,+0.0189,-0.2595,-0.0041,$953.51

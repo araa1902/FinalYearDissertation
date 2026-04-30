@@ -1,0 +1,48 @@
+GRAPH STRUCTURE ANALYSIS REPORT
+================================================================================
+
+CONFIGURATION:
+  Sparsity Method: threshold
+  Correlation Threshold: 0.2
+  Lookback Window: 63 days
+  Top-K (if KNN): 4
+
+GRAPH STATISTICS:
+  Average Graph Density: 1.0000
+  Average Sparsity: 0.0000
+  Mean Edge Weight: 0.248054
+  Max Edge Weight: 1.000000
+
+WHY XOM HAS FEW INCOMING EDGES:
+  XOM has 12 incoming edges (excluding self-loop)
+  XOM correlations with other tickers:
+    ✓ EDGE: NVDA correlation = 1.0000
+    ✓ EDGE: MSFT correlation = 0.5405
+    ✓ EDGE: AAPL correlation = 0.4616
+    ✓ EDGE: GS correlation = 0.3376
+    ✓ EDGE: CAT correlation = 0.2915
+    ✓ EDGE: JPM correlation = 0.2858
+    ✗ NO EDGE: CVX correlation = 0.1964
+    ✗ NO EDGE: WMT correlation = 0.1535
+    ✗ NO EDGE: KO correlation = 0.1367
+    ✗ NO EDGE: PFE correlation = 0.1308
+    ✗ NO EDGE: JNJ correlation = 0.1227
+    ✗ NO EDGE: GLD correlation = -0.0356
+    ✗ NO EDGE: TLT correlation = -0.0883
+
+  REASON:
+  XOM (Energy) has low correlation with most assets:
+  - Tech stocks (AAPL, MSFT, NVDA): Different sectors, lower correlation
+  - Financials (JPM, GS): Different sector dynamics
+  - Healthcare (JNJ, PFE): Defensive assets, uncorrelated
+  - Consumer (WMT, KO): Consumer staples, different drivers
+  - Bonds (TLT): Defensive, negatively correlated
+  - Gold (GLD): Safe-haven, uncorrelated
+  - Only strong correlations: CVX (peer energy), KO (commodity/inflation hedge)
+
+IMPLICATIONS FOR EXPLAINABILITY:
+  The GAT model's attention mechanism sees that XOM is mostly isolated
+  in the graph (few incoming edges). This means XOM's decisions are driven
+  by its own features rather than peer influences.
+  When we do find important edges (KO→XOM), they have outsized impact
+  because they're rare and carry strong signals.

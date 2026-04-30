@@ -1,0 +1,6 @@
+Metric,Equal-Weight (1/N),Vanilla PPO (MLP),Dynamic GAT
+Total Return (%),-4.05,42.84,100.62
+Final Value ($),"95,947","1,428,425","2,006,164"
+Sharpe Ratio,-0.6522,0.7140,1.3528
+Max Drawdown (%),-4.88,21.62,18.10
+Volatility (%),3.90,13.32,13.08

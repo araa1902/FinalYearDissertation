@@ -1,0 +1,13 @@
+Model,Regime,Sharpe Ratio,Max Drawdown,Annual Return,Calmar Ratio
+1/N Baseline,Bull Market,1.946433,-0.101775,0.255507,3.515695
+1/N Baseline,Bear Market,-0.273728,-0.187171,-0.050861,-0.271734
+1/N Baseline,High-Volatility Crisis,1.131051,-0.049491,0.148379,2.998122
+Vanilla PPO,Bull Market,2.118255,-0.082975,0.240564,3.968316
+Vanilla PPO,Bear Market,-0.236551,-0.195958,-0.060777,-0.310152
+Vanilla PPO,High-Volatility Crisis,0.968628,-0.042005,0.105313,2.507174
+GCN (Static),Bull Market,2.206376,-0.092715,0.245512,4.631418
+GCN (Static),Bear Market,-0.039056,-0.178849,-0.024094,-0.134714
+GCN (Static),High-Volatility Crisis,2.172888,-0.033267,0.255623,7.684022
+GAT (Dynamic),Bull Market,2.224998,-0.093705,0.251665,4.665338
+GAT (Dynamic),Bear Market,-0.008813,-0.180981,-0.019183,-0.105993
+GAT (Dynamic),High-Volatility Crisis,2.100302,-0.035219,0.254863,7.236615

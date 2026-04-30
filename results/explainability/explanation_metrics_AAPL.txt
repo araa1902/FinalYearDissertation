@@ -1,0 +1,17 @@
+Explanation for: AAPL
+Target Node Index: 0
+
+Quality Metrics:
+  Sparsity: 0.9231
+  Subgraph Fidelity Drop: 0.020038
+  Max Single-Edge Drop: 0.120157
+  Important Edges Count: 1
+  Total Edges Tested: 13
+  Mask Threshold: 0.8 (only edges with score >= 0.8 are important)
+
+Top 5 Edges by Raw Fidelity Drop:
+  1. NVDA → AAPL: raw_drop=0.120157, score=1.0000
+  2. MSFT → AAPL: raw_drop=0.015500, score=0.1290
+  3. KO → AAPL: raw_drop=0.000497, score=0.0041
+  4. XOM → AAPL: raw_drop=0.000001, score=0.0000
+  5. JPM → AAPL: raw_drop=0.000000, score=0.0000

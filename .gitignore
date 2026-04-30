@@ -12,22 +12,17 @@ ENV/
 .DS_Store
 
 # ============================================================
-# RL / Training
+# RL / Training (Keeping code clean)
 # ============================================================
-logs/
 tensorboard/
-*.log
 
 # ============================================================
-# Results, models, raw data (ignore contents, keep structure)
+# ALLOW EVERYTHING (Results, Models, Data)
 # ============================================================
-results/*
-!results/.gitkeep
-models/*
-!models/.gitkeep
-!models/best_model/
-data/raw/*
-!data/raw/.gitkeep
+# We are intentionally tracking these for the final submission backup
+!results/
+!models/
+!data/raw/
 
 # ============================================================
 # Testing / cache
@@ -35,8 +30,3 @@ data/raw/*
 .pytest_cache/
 .mypy_cache/
 .coverage
-*.pkl
-*.pickle
-*.npz
-*.pth
-*.pt

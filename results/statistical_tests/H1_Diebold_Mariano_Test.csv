@@ -1,0 +1,2 @@
+Test_Name,Model_1,Model_2,Test_Type,Statistic_Value,P_Value,Significance_Level,Reject_H0,Sample_Size,Mean_Loss_Diff,Long_Run_Variance,Interpretation
+Diebold-Mariano (H1),GAT-PPO,GCN-PPO,Risk-Adjusted Return Loss Differential,-2.0846616597592265,0.03710002320550032,0.05,True,1008,-6.801480894468816e-06,1.072991641335007e-08,Models significantly differ in risk-adjusted returns

@@ -1,0 +1,17 @@
+Explanation for: MSFT
+Target Node Index: 1
+
+Quality Metrics:
+  Sparsity: 1.0000
+  Subgraph Fidelity Drop: 0.000019
+  Max Single-Edge Drop: 0.000012
+  Important Edges Count: 0
+  Total Edges Tested: 13
+  Mask Threshold: 0.8 (only edges with score >= 0.8 are important)
+
+Top 5 Edges by Raw Fidelity Drop:
+  1. PFE → MSFT: raw_drop=0.000012, score=0.0000
+  2. WMT → MSFT: raw_drop=0.000008, score=0.0000
+  3. GS → MSFT: raw_drop=0.000002, score=0.0000
+  4. NVDA → MSFT: raw_drop=0.000000, score=0.0000
+  5. AAPL → MSFT: raw_drop=0.000000, score=0.0000

@@ -1,0 +1,87 @@
+================================================================================
+EXACT EDGE ABLATION RESULTS - INITIAL STATE ANALYSIS
+================================================================================
+
+CHANGE MADE:
+  Removed 1000-step fast-forward. Now using initial market state.
+  This ensures ablation tests the actual graph state at test start.
+
+================================================================================
+XOM (ExxonMobil) - Energy Sector
+================================================================================
+
+IMPORTANT EDGES (score >= 0.8):
+  1. AAPL → XOM: score=1.0000, raw_drop=0.0541
+
+OTHER EDGES TESTED:
+  CVX → XOM: score=0.0317, raw_drop=0.0017 (other energy, but lower impact)
+  KO → XOM: score=0.0304, raw_drop=0.0016 (consumer staples)
+  All others: score=0.0000 (no edges exist)
+
+INTERPRETATION:
+  Apple's tech sector movements have outsized influence on XOM's learned behavior.
+  This could indicate the model learned sector rotation patterns where tech 
+  strength correlates with energy demand expectations.
+
+QUALITY METRICS:
+  Sparsity: 0.9231 (92.3% of possible edges pruned)
+  Subgraph Fidelity Drop: 0.006285 (minimal impact when removing unimportant edges)
+  Max Single-Edge Drop: 0.054120 (AAPL removal causes ~5.4% embedding change)
+
+================================================================================
+AAPL (Apple) - Tech Sector
+================================================================================
+
+IMPORTANT EDGES (score >= 0.8):
+  1. MSFT → AAPL: score=1.0000, raw_drop=0.0086
+
+OTHER EDGES TESTED:
+  NVDA → AAPL: score=0.0044, raw_drop=0.00004 (same sector, lower impact)
+  XOM → AAPL: score=0.00019, raw_drop=0.0000016
+  KO → AAPL: score=0.00004, raw_drop=0.0000004
+  All others: score=0.0000 (no edges exist)
+
+INTERPRETATION:
+  Microsoft is the primary peer influence on Apple's portfolio decisions.
+  This makes sense given their high correlation and co-movement in markets.
+  NVIDIA (same sector) has minimal impact, suggesting MSFT is the key signal.
+
+QUALITY METRICS:
+  Sparsity: 0.9231 (92.3% of possible edges pruned)
+  Subgraph Fidelity Drop: 0.000050 (negligible impact)
+  Max Single-Edge Drop: 0.008614 (MSFT removal causes ~0.86% embedding change)
+
+================================================================================
+KEY INSIGHTS
+================================================================================
+
+1. CORRECT ABLATION BEHAVIOR:
+   - Ablation now correctly identifies 1-2 truly important edges per ticker
+   - Normalized scores properly rank edge importance
+   - Sparsity metrics show most edges are pruned (expected with threshold=0.2)
+
+2. SECTOR DYNAMICS:
+   - Tech stocks show strong peer influence (MSFT → AAPL)
+   - Energy/consumer show cross-sector dependencies (AAPL → XOM)
+   - Most assets are only influenced by 1-3 peer nodes
+
+3. GRAPH SPARSIFICATION EXPLAINED:
+   - GAT threshold (0.2) combined with sector blending creates a highly sparse graph
+   - Only strong correlations survive the threshold
+   - This forces the ablation to find only the MOST important edges
+
+4. INTERPRETATION GUIDANCE:
+   - score=1.0: Dominant edge with outsized impact
+   - score=0.0-0.1: Weak or non-existent edges
+   - High sparsity + few important edges = Model makes decisions based on few signals
+   - Low fidelity drops = Removing other edges has minimal impact (expected)
+
+================================================================================
+NEXT STEPS
+================================================================================
+
+Recommended analysis:
+1. Explain all 14 tickers to identify sector-wide patterns
+2. Compare edge importance across time periods (pre/during/post-crash)
+3. Validate if learned dependencies make economic sense
+4. Check if edges change with market regime

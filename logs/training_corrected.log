@@ -1,0 +1,186 @@
+
+================================================================================
+TRAINING PHASE: Train All Three Models
+================================================================================
+Train: 2015--2019 | Validation: 2020 | Test: 2021--2024
+
+=== Data Preparation ===
+Loading data from cache: data/raw/data_2015-01-01_2024-12-31.parquet
+
+=== Graph Construction ===
+ Built 2480 correlation graphs
+ Aligned data to 2480 dates
+
+=== Data Split ===
+  Training:   2015-06-30 to 2020-12-31 (1438 days)
+  Validation: 2021-01-01 to 2024-12-30 (1042 days)
+  Test:       2021-01-01 to 2024-12-30 (1042 days)
+
+================================================================================
+STARTING TRAINING FOR ALL THREE MODELS
+================================================================================
+
+================================================================================
+TRAINING: PPO BASELINE (No Graphs)
+================================================================================
+
+Using cpu device
+Training for 300000 timesteps...
+=================================
+Episode 1 Complete
+End Total Asset: 1452401.81
+Total Return: 0.4553
+Sharpe Ratio: 0.4709
+Max Drawdown: 0.3001
+=================================
+-----------------------------
+| time/              |      |
+|    fps             | 3561 |
+|    iterations      | 1    |
+|    time_elapsed    | 0    |
+|    total_timesteps | 2048 |
+-----------------------------
+=================================
+Episode 2 Complete
+End Total Asset: 1350573.83
+Total Return: 0.3811
+Sharpe Ratio: 0.3981
+Max Drawdown: 0.3698
+=================================
+-----------------------------------------
+| time/                   |             |
+|    fps                  | 2748        |
+|    iterations           | 2           |
+|    time_elapsed         | 1           |
+|    total_timesteps      | 4096        |
+| train/                  |             |
+|    approx_kl            | 0.007362115 |
+|    clip_fraction        | 0.0363      |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -19.9       |
+|    explained_variance   | -1.53       |
+|    learning_rate        | 8e-05       |
+|    loss                 | -0.223      |
+|    n_updates            | 10          |
+|    policy_gradient_loss | -0.0239     |
+|    std                  | 1           |
+|    value_loss           | 0.0878      |
+-----------------------------------------
+=================================
+Episode 3 Complete
+End Total Asset: 1312223.81
+Total Return: 0.3541
+Sharpe Ratio: 0.3654
+Max Drawdown: 0.3977
+=================================
+=================================
+Episode 4 Complete
+End Total Asset: 1433592.59
+Total Return: 0.4437
+Sharpe Ratio: 0.4545
+Max Drawdown: 0.3352
+=================================
+-----------------------------------------
+| time/                   |             |
+|    fps                  | 2607        |
+|    iterations           | 3           |
+|    time_elapsed         | 2           |
+|    total_timesteps      | 6144        |
+| train/                  |             |
+|    approx_kl            | 0.008988703 |
+|    clip_fraction        | 0.0525      |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -19.9       |
+|    explained_variance   | -1          |
+|    learning_rate        | 8e-05       |
+|    loss                 | -0.245      |
+|    n_updates            | 20          |
+|    policy_gradient_loss | -0.0291     |
+|    std                  | 1           |
+|    value_loss           | 0.0299      |
+-----------------------------------------
+=================================
+Episode 5 Complete
+End Total Asset: 1273275.02
+Total Return: 0.3251
+Sharpe Ratio: 0.3337
+Max Drawdown: 0.4610
+=================================
+-----------------------------------------
+| time/                   |             |
+|    fps                  | 2532        |
+|    iterations           | 4           |
+|    time_elapsed         | 3           |
+|    total_timesteps      | 8192        |
+| train/                  |             |
+|    approx_kl            | 0.008649986 |
+|    clip_fraction        | 0.0459      |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -19.9       |
+|    explained_variance   | -0.871      |
+|    learning_rate        | 8e-05       |
+|    loss                 | -0.245      |
+|    n_updates            | 30          |
+|    policy_gradient_loss | -0.0287     |
+|    std                  | 1           |
+|    value_loss           | 0.015       |
+-----------------------------------------
+=================================
+Episode 6 Complete
+End Total Asset: 1312139.25
+Total Return: 0.3538
+Sharpe Ratio: 0.3659
+Max Drawdown: 0.3250
+=================================
+=================================
+Episode 7 Complete
+End Total Asset: 1305668.73
+Total Return: 0.3489
+Sharpe Ratio: 0.3610
+Max Drawdown: 0.3579
+=================================
+-----------------------------------------
+| time/                   |             |
+|    fps                  | 2478        |
+|    iterations           | 5           |
+|    time_elapsed         | 4           |
+|    total_timesteps      | 10240       |
+| train/                  |             |
+|    approx_kl            | 0.008746936 |
+|    clip_fraction        | 0.0524      |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -19.9       |
+|    explained_variance   | -0.607      |
+|    learning_rate        | 8e-05       |
+|    loss                 | -0.216      |
+|    n_updates            | 40          |
+|    policy_gradient_loss | -0.0298     |
+|    std                  | 1           |
+|    value_loss           | 0.009       |
+-----------------------------------------
+=================================
+Episode 8 Complete
+End Total Asset: 1296299.31
+Total Return: 0.3441
+Sharpe Ratio: 0.3509
+Max Drawdown: 0.3622
+=================================
+-----------------------------------------
+| time/                   |             |
+|    fps                  | 2452        |
+|    iterations           | 6           |
+|    time_elapsed         | 5           |
+|    total_timesteps      | 12288       |
+| train/                  |             |
+|    approx_kl            | 0.009189433 |
+|    clip_fraction        | 0.0576      |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -19.9       |
+|    explained_variance   | -0.628      |
+|    learning_rate        | 8e-05       |
+|    loss                 | -0.252      |
+|    n_updates            | 50          |
+|    policy_gradient_loss | -0.0327     |
+|    std                  | 1           |
+|    value_loss           | 0.0061      |
+-----------------------------------------

@@ -1,0 +1,28 @@
+GAT FEATURE EXTRACTOR DIAGNOSIS
+================================================================================
+
+QUESTION: Why does ablation find only 2 edges for XOM?
+ANSWER: The GAT feature extractor applies a hard threshold that removes most edges.
+
+PROCESSING PIPELINE:
+1. Raw correlation graph: 6 incoming edges to XOM
+2. Sector blending (weight=0.5744): Still most edges present
+3. Hard threshold |adj| >= 0.2: Reduced to 5 edges
+4. Final GAT input: 5 edges
+
+EDGES RETAINED BY GAT:
+  AAPL → XOM: weight=0.319759
+  JPM → XOM: weight=0.200830
+  KO → XOM: weight=0.325695
+  CAT → XOM: weight=0.205474
+
+WHY MOST EDGES WERE REMOVED:
+  The threshold 0.2 is designed to keep only STRONG correlations.
+  Most of XOM's correlations are in the 0.1-0.3 range, below this threshold.
+  Only CVX and KO (after blending) have |weight| >= 0.2.
+
+IMPLICATIONS FOR ABLATION:
+  When ablation tests edges, it's testing on the ALREADY SPARSIFIED graph.
+  The GAT only sees 2-3 edges to XOM, so ablation finds those are the only
+  meaningful contributors. The low fidelity drops for other ablations show
+  they don't exist in the GAT's graph representation.
