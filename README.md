@@ -7,7 +7,7 @@
 This project implements **GAT-PPO**, a novel framework for multi-asset portfolio optimisation that leverages graph neural networks to model inter-asset relationships and attention mechanisms to explain investment decisions. The framework is designed to:
 
 - **Learn dynamic trading policies** using PPO on a 15-asset portfolio spanning multiple sectors (Tech, Finance, Healthcare, Consumer, Energy, Industrials, and hedging assets)
-- **Capture market regimes** (2015–2024 period includes 2020 COVID, 2022 interest rate shock, 2024 recovery) through a custom Gymnasium environment
+- **Capture market regimes** (2015-2024 period includes 2020 COVID, 2022 interest rate shock, 2024 recovery) through a custom Gymnasium environment
 - **Provide explainability** via:
   - **Intrinsic explainability**: Real-time attention heatmaps showing which asset relationships drive decisions
   - **Post-hoc explainability**: Exact Edge Ablation audit to measure causal impact of graph edges on portfolio actions
@@ -141,11 +141,11 @@ pip install -r requirements.txt
 
 ### 2.2 Hardware Requirements
 
-- **Minimum**: CPU-based training (slow, ~24–48 hours for 1M timesteps)
+- **Minimum**: CPU-based training (slow, ~24-48 hours for 1M timesteps)
 - **Recommended**: NVIDIA GPU (RTX 3080 or equivalent)
   - Tested on: NVIDIA RTX 3090, NVIDIA A100 (40 GB)
   - Memory: 8 GB+ VRAM for standard training
-  - Training time: ~4–6 hours for 1M timesteps
+  - Training time: ~4-6 hours for 1M timesteps
 
 ## 3. Setup and Installation
 
@@ -191,7 +191,7 @@ The training pipeline automatically downloads data from Yahoo Finance via `yfina
 ```python
 # config.yaml controls the ticker list and date range
 # Default: 2015-01-01 to 2024-12-31 (10 years)
-# Split: Train (2015–2020), Test (2021–2024)
+# Split: Train (2015-2020), Test (2021-2024)
 ```
 
 #### Option B: Manual Download (Pre-cached)
@@ -217,7 +217,7 @@ Date,Open,High,Low,Close,Volume
 
 ### 4.1 Training: GAT-PPO Agent
 
-Train the full model on 2015–2020 data with deterministic seed:
+Train the full model on 2015-2020 data with deterministic seed:
 
 ```bash
 cd src/agents
@@ -237,14 +237,14 @@ python train_ppo_gat.py \
 
 **Key hyperparameters:**
 
-- `total_timesteps`: 1M for quick validation, 2–5M for full training
+- `total_timesteps`: 1M for quick validation, 2-5M for full training
 - `learning_rate`: 3e-4 (standard for PPO)
 - `n_steps`: 2048 (GAT is compute-intensive; reduce if OOM)
 - `seed`: 42 (or any fixed value for reproducibility)
 
 ### 4.2 Evaluation & Backtesting
 
-Test the trained model on 2021–2024 (out-of-sample):
+Test the trained model on 2021-2024 (out-of-sample):
 
 ```bash
 cd src/agents
@@ -309,10 +309,10 @@ python plot_regime_attention_figures.py \
 
 **Generated figures:**
 
-- `Figure_6_3_Baseline_Heatmap.pdf` – 2021 Bull Market attention
-- `Figure_6_3_Stress_Heatmap.pdf` – 2022 Interest Rate Shock attention
-- `Figure_6_3_Rally_Heatmap.pdf` – 2024 Recovery attention
-- `Figure_6_4_Attention_Deltas.pdf` – Top 10 amplifications and attenuations
+- `Figure_6_3_Baseline_Heatmap.pdf` - 2021 Bull Market attention
+- `Figure_6_3_Stress_Heatmap.pdf` - 2022 Interest Rate Shock attention
+- `Figure_6_3_Rally_Heatmap.pdf` - 2024 Recovery attention
+- `Figure_6_4_Attention_Deltas.pdf` - Top 10 amplifications and attenuations
 
 #### 4.3.2 Run Exact Edge Ablation (Silicon Valley Bank Case Study)
 
@@ -345,7 +345,7 @@ for target_asset_idx in range(len(config['data']['ticker_list'])):
 
 **Outputs:**
 
-- `ablation_output.log` – Edge impact scores for each asset pair
+- `ablation_output.log` - Edge impact scores for each asset pair
 - Identifies which connections were most critical during financial stress
 
 ## 5. Key Mechanisms

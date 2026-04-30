@@ -155,7 +155,7 @@ class AttentionAnalyser:
         
         # Difference (diverging colourmap to show both increase and decrease)
         sns.heatmap(diff, annot=True, fmt='.2f', cmap='RdBu_r',
-                    square=True, cbar_kws={'label': 'Δ Attention'},
+                    square=True, cbar_kws={'label': 'Delta Attention'},
                     xticklabels=self.tickers, yticklabels=self.tickers,
                     ax=axes[2], center=0)
         axes[2].set_title(f"Difference: {stress_label} - {normal_label}\n(Head {head_idx})", fontweight='bold')
@@ -292,9 +292,9 @@ class AttentionAnalyser:
         print("="*80)
         
         for head_idx in range(len(focus_normal)):
-            print(f"\n{'─'*80}")
+            print(f"\n{'-'*80}")
             print(f"HEAD {head_idx}")
-            print(f"{'─'*80}")
+            print(f"{'-'*80}")
             
             print(f"\nNormal Regime - Top {top_k} Connections:")
             for i, (from_ticker, to_ticker, weight) in enumerate(focus_normal[head_idx], 1):

@@ -20,14 +20,14 @@ import seaborn as sns
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 # ---------------------------------------------------------------------------
-# Global style — dissertation-grade, IEEE/ACM compatible
+# Global style - dissertation-grade, IEEE/ACM compatible
 # ---------------------------------------------------------------------------
 
 # Use a font available in most LaTeX-adjacent environments; fall back gracefully
 _FONT_FAMILY = "DejaVu Sans"  # reliable cross-platform; swap for "Times New Roman" if desired
 
 _PALETTE: Dict[str, str] = {
-    "bg":         "#FFFFFF",   # pure white — matches most document backgrounds
+    "bg":         "#FFFFFF",   # pure white - matches most document backgrounds
     "axes_bg":    "#FAFAFA",   # very light grey for axes interior
     "text":       "#1A1A2E",   # near-black for all labels
     "subtitle":   "#555577",
@@ -37,7 +37,7 @@ _PALETTE: Dict[str, str] = {
     "decrease":   "#2471A3",   # distinct blue (attenuation)
 }
 
-# Shared rcParams — applied once at module level
+# Shared rcParams - applied once at module level
 mpl.rcParams.update({
     "figure.facecolor":       _PALETTE["bg"],
     "axes.facecolor":         _PALETTE["axes_bg"],
@@ -65,7 +65,7 @@ mpl.rcParams.update({
     "ps.fonttype":            42,
 })
 
-# Diverging colormap — perceptually uniform, colourblind-safe
+# Diverging colormap - perceptually uniform, colourblind-safe
 _CMAP_ATTN   = "YlOrRd"          # sequential: 0 to 1 attention weights
 _CMAP_DELTA  = "RdBu_r"          # diverging: negative (blue) to positive (red)
 
@@ -74,21 +74,21 @@ _REGIME_PANELS = [
     {
         "key":             "Baseline",
         "label":           "Baseline Period",
-        "subtitle":        "2021 Bull Market — Stable Regime",
+        "subtitle":        "2021 Bull Market - Stable Regime",
         "title_color":     "#154360",   # dark blue
         "filename_suffix": "baseline",
     },
     {
         "key":             "Stress",
         "label":           "Market Stress Period",
-        "subtitle":        "2022 Rate Shock — Crisis Regime",
+        "subtitle":        "2022 Rate Shock - Crisis Regime",
         "title_color":     "#78281F",   # dark red
         "filename_suffix": "stress",
     },
     {
         "key":             "Rally",
         "label":           "Strong Rally Period",
-        "subtitle":        "2024 Recovery — Recovery Regime",
+        "subtitle":        "2024 Recovery - Recovery Regime",
         "title_color":     "#145A32",   # dark green
         "filename_suffix": "rally",
     },
@@ -131,7 +131,7 @@ class RegimeAttentionVisualiser:
         print(f"Prepared {len(self.regimes)} regime matrices")
 
     # -----------------------------------------------------------------------
-    # Figure 6.3 — individual heatmaps
+    # Figure 6.3 - individual heatmaps
     # -----------------------------------------------------------------------
 
     def generate_figure_6_3(self, output_path: Optional[str] = None) -> str:
@@ -179,7 +179,7 @@ class RegimeAttentionVisualiser:
                 ax=ax,
                 cbar=True,
                 cbar_kws={
-                    "label":  r"Attention Weight $\alpha_{ij}$",
+                    "label":  "Attention Weight (alpha)",
                     "shrink": 0.68,
                     "pad":    0.02,
                 },
@@ -194,7 +194,7 @@ class RegimeAttentionVisualiser:
 
             # ---- title (only metrics, no label/subtitle) ----
             ax.set_title(
-                rf"max $\alpha$ = {stats['max']:.4f}  |  "
+                f"max alpha = {stats['max']:.4f}  |  "
                 f"Sparsity = {stats['sparsity']:.1f}%",
                 fontsize=22,
                 fontweight="bold",
@@ -229,13 +229,13 @@ class RegimeAttentionVisualiser:
         return base_path
 
     # -----------------------------------------------------------------------
-    # Figure 6.4 — per-edge delta bar chart
+    # Figure 6.4 - per-edge delta bar chart
     # -----------------------------------------------------------------------
 
     def generate_figure_6_4(self, output_path: Optional[str] = None) -> str:
         """
         Generate Figure 6.4: top-10 attention amplifications and attenuations
-        (Δα_ij = α_ij[Stress] − α_ij[Baseline]).
+        (Delta alpha = Stress - Baseline).
 
         Returns:
             Path to the saved figure.
@@ -258,19 +258,19 @@ class RegimeAttentionVisualiser:
 
         self._plot_edge_panel(
             ax_amp, amps,
-            title=r"(a) Top-10 Amplifications" + "\n" + r"Baseline $\rightarrow$ Stress",
+            title="(a) Top-10 Amplifications" + "\n" + "Baseline -> Stress",
             color=_PALETTE["increase"],
         )
         self._plot_edge_panel(
             ax_att, atts,
-            title=r"(b) Top-10 Attenuations" + "\n" + r"Baseline $\rightarrow$ Stress",
+            title="(b) Top-10 Attenuations" + "\n" + "Baseline -> Stress",
             color=_PALETTE["decrease"],
         )
 
         # Shared x-axis label via figure text
         fig.text(
             0.5, 0.01,
-            r"Attention Weight Change  $\Delta\alpha_{ij}$",
+            "Attention Weight Change (Delta alpha)",
             ha="center", va="bottom",
             fontsize=20, fontweight="bold", color=_PALETTE["text"],
         )
@@ -300,7 +300,7 @@ class RegimeAttentionVisualiser:
         values = [e["delta"] for e in edges]
         y_pos  = np.arange(len(labels))
 
-        # Gradient alpha — strongest edge is most opaque
+        # Gradient alpha - strongest edge is most opaque
         alphas = np.linspace(0.95, 0.50, len(values))
         bars   = ax.barh(y_pos, values, color=color,
                          edgecolor="none", height=0.65)
@@ -348,7 +348,7 @@ class RegimeAttentionVisualiser:
         ax.spines["left"].set_color(_PALETTE["border"])
         ax.spines["bottom"].set_color(_PALETTE["border"])
 
-        # X-axis limits — symmetric with margin
+        # X-axis limits - symmetric with margin
         ax.set_xlim(-abs_max * 1.25, abs_max * 1.25)
         ax.margins(y=0.02)
 
@@ -371,8 +371,8 @@ class RegimeAttentionVisualiser:
                 continue
             s = _compute_matrix_stats(attn)
             print(f"\n{label}:")
-            print(f"  Mean α   : {s['mean']:.4f}")
-            print(f"  Max  α   : {s['max']:.4f}")
+            print(f"  Mean alpha   : {s['mean']:.4f}")
+            print(f"  Max  alpha   : {s['max']:.4f}")
             print(f"  Sparsity : {s['sparsity']:.1f}%")
 
         # Transition deltas
@@ -380,7 +380,7 @@ class RegimeAttentionVisualiser:
             if src in self.regimes and tgt in self.regimes:
                 delta = self.regimes[tgt] - self.regimes[src]
                 print(f"\nAttention Changes ({src} to {tgt}):")
-                print(f"  Mean Δα          : {delta.mean():.4f}")
+                print(f"  Mean Delta alpha : {delta.mean():.4f}")
                 print(f"  Amplifications   : {(delta > 0).sum()} edges")
                 print(f"  Attenuations     : {(delta < 0).sum()} edges")
                 print(f"  Max increase     : {delta.max():.4f}")
@@ -463,7 +463,7 @@ def main() -> None:
 
     input_file = args.input
     if input_file is None:
-        print("[*] Auto-detecting latest attention matrix file …")
+        print("[*] Auto-detecting latest attention matrix file ...")
         input_file = find_latest_attention_file()
         print(f"Found: {input_file}")
 
@@ -476,13 +476,13 @@ def main() -> None:
             path = vis.generate_figure_6_3(
                 output_path=f"{args.output_dir}/figure_6_3_regime_attention_heatmaps.png"
             )
-            generated.append(f"Figure 6.3  — {path}")
+            generated.append(f"Figure 6.3 - {path}")
 
         if not args.skip_6_4:
             path = vis.generate_figure_6_4(
                 output_path=f"{args.output_dir}/figure_6_4_edge_attention_changes.png"
             )
-            generated.append(f"Figure 6.4  — {path}")
+            generated.append(f"Figure 6.4 - {path}")
 
         vis.print_analysis_summary()
 

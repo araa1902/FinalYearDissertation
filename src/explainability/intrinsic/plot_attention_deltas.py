@@ -2,8 +2,8 @@
 """
 Figure 6.4 - Per-Edge Attention Weight Changes (Baseline to Stress)
 
-Left panel  : Top-10 amplifications  (Δα_ij > 0)
-Right panel : Top-10 attenuations    (Δα_ij < 0)
+Left panel  : Top-10 amplifications  (Delta alpha > 0)
+Right panel : Top-10 attenuations    (Delta alpha < 0)
 
 Usage:
     python plot_attention_deltas_refactored.py
@@ -27,7 +27,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 # ---------------------------------------------------------------------------
-# Palette — cool-neutral base with precise semantic colours
+# Palette - cool-neutral base with precise semantic colours
 # ---------------------------------------------------------------------------
 
 _PALETTE: Dict[str, str] = {
@@ -38,9 +38,9 @@ _PALETTE: Dict[str, str] = {
     "grid":       "#E5E7EB",       # light neutral grid
     "border":     "#D1D5DB",
     "zero_line":  "#9CA3AF",       # visible but unobtrusive zero rule
-    "amp":        "#1A6EBD",       # amplification — blue
+    "amp":        "#1A6EBD",       # amplification - blue
     "amp_light":  "#EBF3FB",       # amp bar background band
-    "att":        "#D6232A",       # attenuation — red
+    "att":        "#D6232A",       # attenuation - red
     "att_light":  "#FDECEA",       # att bar background band
     "rank_text":  "#FFFFFF",       # rank badge text
 }
@@ -126,7 +126,7 @@ class AttentionDeltasVisualizer:
         # Shared x-axis label, centred across both panels
         fig.text(
             0.5, 0.01,
-            r"Attention Weight Change  $\Delta\alpha_{ij}$",
+            "Attention Weight Change (Delta alpha)",
             ha="center", va="bottom",
             fontsize=15, fontweight="bold", color=_PALETTE["text"],
         )
@@ -148,20 +148,20 @@ class AttentionDeltasVisualizer:
         Render one ranked horizontal-bar panel.
 
         Improvements over original:
-          • Uniform bar opacity (no fading) — fading obscures magnitudes
-          • Thin coloured band behind each row for readability
-          • Rank badge on bar end (styled circle with rank number)
-          • Clean, minimal x-axis; zero rule slightly heavier
-          • Panel sub-title uses a coloured pill badge
+          - Uniform bar opacity (no fading) - fading obscures magnitudes
+          - Thin coloured band behind each row for readability
+          - Rank badge on bar end (styled circle with rank number)
+          - Clean, minimal x-axis; zero rule slightly heavier
+          - Panel sub-title uses a coloured pill badge
         """
         is_amp   = side == "amp"
         bar_col  = _PALETTE["amp"]  if is_amp else _PALETTE["att"]
         band_col = _PALETTE["amp_light"] if is_amp else _PALETTE["att_light"]
-        sign_sym = "▲" if is_amp else "▼"
+        sign_sym = "(+)" if is_amp else "(-)"
         panel_letter = "(a)" if is_amp else "(b)"
         panel_label  = "Top-10 Amplifications" if is_amp else "Top-10 Attenuations"
 
-        labels = [f"{e['source']} → {e['target']}" for e in edges]
+        labels = [f"{e['source']} -> {e['target']}" for e in edges]
         values = [e["delta"] for e in edges]
         y_pos  = np.arange(len(labels))
 
@@ -209,7 +209,7 @@ class AttentionDeltasVisualizer:
         ax.xaxis.set_major_locator(mticker.MaxNLocator(nbins=5))
         ax.tick_params(axis="x", length=3, color=_PALETTE["border"])
 
-        # Zero rule — clear, not distracting
+        # Zero rule - clear, not distracting
         ax.axvline(0, color=_PALETTE["zero_line"], linewidth=1.1,
                    linestyle="-", zorder=2)
 
@@ -234,7 +234,7 @@ class AttentionDeltasVisualizer:
         # --- Panel title (inside axes, top) --------------------------------
         ax.set_title(
             f"{panel_letter}  {sign_sym}  {panel_label}\n"
-            r"Baseline $\rightarrow$ Stress",
+            "Baseline -> Stress",
             fontsize=14, fontweight="bold",
             color=bar_col,
             pad=10, loc="left",
@@ -248,7 +248,7 @@ class AttentionDeltasVisualizer:
         if "Baseline" in self.regimes and "Stress" in self.regimes:
             delta = self.regimes["Stress"] - self.regimes["Baseline"]
             np.fill_diagonal(delta, 0) # Exclude self-loops
-            print(f"  Mean Δα        : {delta.mean():.4f}")
+            print(f"  Mean Delta alpha   : {delta.mean():.4f}")
             print(f"  Amplifications : {(delta > 0).sum()} edges")
             print(f"  Attenuations   : {(delta < 0).sum()} edges")
             print(f"  Max increase   : {delta.max():.4f}")
@@ -284,7 +284,7 @@ def find_latest_attention_file() -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Generate Figure 6.4 — attention weight deltas.",
+        description="Generate Figure 6.4 - attention weight deltas.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
@@ -299,7 +299,7 @@ def main() -> None:
 
     input_file = args.input
     if input_file is None:
-        print("[*] Auto-detecting latest attention matrix file …")
+        print("[*] Auto-detecting latest attention matrix file ...")
         input_file = find_latest_attention_file()
         print(f"Found: {input_file}")
 
