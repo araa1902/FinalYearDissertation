@@ -17,87 +17,62 @@ This project implements **GAT-PPO**, a novel framework for multi-asset portfolio
 ```
 graph-rl-portfolio/
 ├── src/                           # Main source code
-│   ├── agents/                    # RL training pipelines
-│   │   ├── train_ppo_gat.py       # Primary training script for GAT-PPO
-│   │   ├── PPO_GAT_Trainer.py     # GAT policy wrapper for stable-baselines3
-│   │   ├── PPO_StaticGCN_Trainer.py
-│   │   ├── PPOTrainer.py          # Baseline PPO (no graph)
-│   │   └── cross_validation.py    # K-fold cross-validation utilities
+│   ├── agents/                    # RL training & evaluation
+│   │   ├── train_ppo_gat.py       # Integrated training/eval pipeline
+│   │   ├── PPO_GAT_Trainer.py     # GAT-PPO training logic
+│   │   ├── PPO_StaticGCN_Trainer.py # Static GCN baseline trainer
+│   │   ├── PPOTrainer.py          # Vanilla PPO trainer
+│   │   ├── evaluator.py           # Standalone model evaluator
+│   │   ├── attention_callback.py  # Weights capture during training
+│   │   └── baseline_equal_weight.py # 1/N strategy comparison
 │   │
-│   ├── gat/                       # Graph Attention Network implementation
-│   │   ├── gat.py                 # GAT layer & full GAT model with sector fusion
-│   │   ├── feature_extractor.py   # SB3-compatible feature extractor
-│   │   └── sector_fusion.py       # Sector-level graph construction
+│   ├── gat/                       # Graph Attention Network
+│   │   ├── gat.py                 # GAT layer & model definitions
+│   │   └── feature_extractor.py   # SB3 extractor with sector fusion
 │   │
-│   ├── gcn/                       # Graph Convolutional Network (alternative)
-│   │   ├── gcn.py                 # GCN implementation
-│   │   └── feature_extractor.py
+│   ├── gcn/                       # Graph Convolutional Network (baseline)
+│   │   └── static_gcn_feature_extractor.py # Fixed-topology extractor
 │   │
-│   ├── env/                       # Custom Gymnasium environments
-│   │   ├── portfolio_env.py       # Main RL environment (GAT-compatible, attention capture)
-│   │   └── portfolio_env_baseline.py  # Baseline environment (no graph)
+│   ├── env/                       # Gymnasium environments
+│   │   ├── portfolio_env.py       # Main environment (GAT-compatible)
+│   │   └── portfolio_env_baseline.py # Baseline environment (no graph)
 │   │
 │   ├── data/                      # Data pipeline
-│   │   ├── downloader.py          # YahooDataDownloader: fetches 10-year data from yfinance
-│   │   ├── preprocessor.py        # FeatureEngineer: OHLCV + technical indicators
-│   │   └── graphbuilder.py        # GraphBuilder: constructs dynamic correlation graphs
-│   │
-│   ├── ablation/                  # Ablation study framework
-│   │   └── [Runs stored in logs/ and models/]
+│   │   ├── downloader.py          # YahooDataDownloader (yfinance)
+│   │   ├── preprocessor.py        # FeatureEngineer (Technical indicators)
+│   │   └── graphbuilder.py        # GraphBuilder (Dynamic correlations)
 │   │
 │   ├── explainability/            # Explainability pipeline
 │   │   ├── intrinsic/
-│   │   │   ├── attention_analyser.py        # Extract & analyse attention weights
-│   │   │   ├── network_visualisation.py     # Draw network graphs with attention
-│   │   │   ├── plot_regime_attention_figures.py  # Generate Figure 6.3 & 6.4 (heatmaps & deltas)
-│   │   │   └── plot_attention_deltas.py
+│   │   │   ├── attention_analyser.py        # Post-hoc buffer analysis
+│   │   │   ├── plot_regime_attention_figures.py # Figures 6.3 & 6.4 generator
+│   │   │   └── plot_attention_deltas.py     # Attention delta visualizations
 │   │   │
 │   │   └── posthoc/
-│   │       ├── exact_edge_ablation_explainer.py  # DenseGNNExplainer: causal edge ablation
-│   │       └── explain_portfolio_decisions.py    # Interpret action explanations
+│   │       ├── exact_edge_ablation_explainer.py # Causal edge ablation logic
+│   │       └── explain_portfolio_decisions.py   # Interpretation wrapper
 │   │
-│   ├── models/                    # Neural network definitions
-│   │   └── [Policy networks and feature extractors]
+│   ├── utils/
+│   │   ├── config_manager.py      # YAML config loader
+│   │   └── seeding.py             # Deterministic seed management
 │   │
-│   └── utils/
-│       ├── config_manager.py      # Load config.yaml
-│       ├── seeding.py             # Deterministic seeds across torch/numpy/gym
-│       └── [Utility functions]
+│   └── models/                    # Internal model definitions
 │
 ├── config/
-│   └── config.yaml                # Central configuration: tickers, sectors, train/test split
+│   └── config.yaml                # Central configuration
 │
 ├── data/
-│   └── raw/                       # Store downloaded .csv files from yfinance (optional)
+│   └── raw/                       # Cached .csv files (optional)
 │
-├── models/                        # Saved trained models
-│   ├── best_model/                # Latest best GAT-PPO checkpoint
-│   ├── best_model_backup/
-│   ├── ppo_gat_YYYYMMDD_HHMMSS/   # Timestamped training runs
-│   ├── ppo_gcn_YYYYMMDD_HHMMSS/
-│   ├── ppo_baseline_YYYYMMDD_HHMMSS/
-│   ├── cv_fold_[1-5]_gat/         # Cross-validation fold checkpoints
-│   ├── cv_fold_[1-5]_gcn/
-│   └── ablation_*/                # Ablation study model variants
+├── models/                        # Saved trained models (checkpoints)
+│   ├── best_model/                # Primary GAT-PPO checkpoint
+│   ├── ppo_gat_YYYYMMDD/          # Timestamped GAT runs
+│   ├── ppo_gcn_YYYYMMDD/          # Static GCN baselines
+│   └── ppo_baseline_YYYYMMDD/     # Vanilla PPO baselines
 │
-├── logs/                          # Training & evaluation logs
-│   ├── cv_fold_[1-5]_gat/         # K-fold training logs
-│   ├── cv_fold_[1-5]_gcn/
-│   ├── ablation_full_YYYYMMDD_HHMMSS/         # Full model ablations
-│   ├── ablation_no_sector_blending_YYYYMMDD_HHMMSS/
-│   ├── ablation_no_signal_independence_YYYYMMDD_HHMMSS/
-│   └── ablation_no_both_YYYYMMDD_HHMMSS/
+├── logs/                          # Training & TensorBoard logs
 │
 ├── results/                       # Evaluation outputs
-│   ├── episodes_metrics_*.csv     # Per-episode returns, sharpe, drawdown
-│   ├── ablation_study_*.csv       # Ablation study performance comparison
-│   ├── ablation_models_*.txt      # Model hyperparameters
-│   └── regime_attention_matrices_*.pkl  # Attention weights for visualisation
-│
-├── docs/                          # Documentation
-├── scripts/
-│   ├── visualisation/             # Visualisation utilities
-│   └── [Helper scripts]
 │
 ├── testingScripts/                # Ad-hoc testing & debugging
 │
@@ -356,6 +331,31 @@ for target_asset_idx in range(len(config['data']['ticker_list'])):
 
 - `ablation_output.log` - Edge impact scores for each asset pair
 - Identifies which connections were most critical during financial stress
+
+### 4.4 Comparative Testing (Hypothesis Verification)
+
+To verify the core hypotheses (H1 and H2) of the dissertation, a comparative testing suite is provided. This script evaluates the primary **GAT-PPO** model against three critical baselines: **1/N Equal-Weight**, **Vanilla PPO**, and **Static GCN**.
+
+**Run the comparative test suite:**
+
+```bash
+python testingScripts/test_trained_models.py
+```
+
+**What this script does:**
+1. **Automated Data Prep**: Fetches and preprocesses the out-of-sample test data.
+2. **Multi-Model Evaluation**: Executes deterministic backtests for all four variants over the 2021-2024 period.
+3. **Metric Calculation**: Computes Sharpe Ratio, Max Drawdown, Calmar Ratio, and Volatility for each strategy.
+4. **Visualization**: Generates **Figure 6.1** (Cumulative Equity Curves) and **Figure 6.2** (Regime-Specific Sharpe Comparison).
+5. **H2 Verification**: Performs degradation gap analysis to confirm if dynamic topology limits capital erosion during bear markets.
+
+**Expected Outputs:**
+- `results/trained_models_comparison_[timestamp].csv`: Full tabular metrics.
+- `results/h1_evidence_equity_curve_[timestamp].png`: Combined equity curve (Figure 6.1).
+- `results/figure_6_2_h2_evidence_regime_sharpe_[timestamp].png`: Regime analysis (Figure 6.2).
+- `results/table_6_2_max_drawdown_[timestamp].csv`: Drawdown metrics by regime.
+
+---
 
 ## 5. Key Mechanisms
 
