@@ -104,6 +104,7 @@ graph-rl-portfolio/
 ├── requirements.txt               # Python dependencies
 ├── package.json                   # Node.js dependencies (for data viz tools)
 ├── config.yaml                    # [Primary config file]
+|── GRL_Submission_READ_ME_FIRST.txt # Submission instructions
 └── README.md                      # This file
 ```
 
@@ -149,7 +150,15 @@ pip install -r requirements.txt
 
 ## 3. Setup and Installation
 
-### 3.1 Clone Repository
+### 3.1 Clone Repository / Extract Folder
+
+If you extracted the codebase from the submission ZIP files, you can skip the clone step and simply enter the directory:
+
+```bash
+cd graph-rl-portfolio
+```
+
+Alternatively, to clone from GitHub:
 
 ```bash
 git clone https://github.com/araa1902/FinalYearDissertation.git
@@ -293,7 +302,7 @@ Extract attention weights from test period and generate publication-ready figure
 
 ```bash
 cd src/explainability/intrinsic
-
+/
 # Step 1: Extract attention weights from evaluation run
 python attention_analyser.py \
   --model_path ../../models/best_model/best_model.zip \
@@ -320,7 +329,7 @@ Perform causal analysis on how graph edges affect portfolio embeddings during SV
 
 ```bash
 cd src/explainability/posthoc
-
+/
 python -c "
 from exact_edge_ablation_explainer import DenseGNNExplainer
 from src.env.portfolio_env import StockPortfolioEnv
