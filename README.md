@@ -1,4 +1,4 @@
-# Graph Reinforcement Learning for Portfolio Optimisation with Explainability
+# Explainable Graph Reinforcement Learning for Portfolio Optimisation
 
 ## 1. Project Overview and Structure
 
