@@ -9,6 +9,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
 from stable_baselines3 import PPO
+import argparse
+import pickle
 
 # --- Project Modules ---
 from ..data.downloader import YahooDataDownloader
@@ -18,6 +20,7 @@ from ..env.portfolio_env import StockPortfolioEnv
 from .PPO_GAT_Trainer import PPOGATTrainer
 from ..utils.seeding import Seed
 from ..utils.config_manager import load_config
+
 
 def evaluate_model_on_test(model_path, env_class, env_kwargs, test_data):
     """
@@ -321,7 +324,6 @@ def merge_attention_buffers():
     Automatically merge training and evaluation attention buffers into a single unified buffer.
     This enables complete analysis across both in-sample and out-of-sample periods.
     """
-    import pickle
     
     buffer_files = sorted(glob.glob('results/attention_logs/attention_buffer_*.pkl'))
     

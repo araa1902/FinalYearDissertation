@@ -3,6 +3,7 @@ import pandas as pd
 from stable_baselines3 import PPO
 from ..env.portfolio_env import StockPortfolioEnv
 import os
+import matplotlib.pyplot as plt
 
 
 class ModelEvaluator:
@@ -170,8 +171,6 @@ class ModelEvaluator:
         """
         if self.results is None:
             raise ValueError("No results to plot. Run evaluate() first.")
-        
-        import matplotlib.pyplot as plt
         
         fig, axes = plt.subplots(2, 1, figsize=(12, 8))
         

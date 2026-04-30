@@ -10,6 +10,7 @@ import os
 import pickle
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
+import traceback
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -493,7 +494,6 @@ def main() -> None:
             print(f"  {entry}")
 
     except Exception as exc:
-        import traceback
         print(f"\n[!] Visualisation error: {exc}")
         traceback.print_exc()
         sys.exit(1)

@@ -17,6 +17,7 @@ import os
 import pickle
 from pathlib import Path
 from typing import Dict, List, Optional
+import traceback
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -315,7 +316,6 @@ def main() -> None:
         print("=" * 72)
         print(f"  Figure 6.4: {path}")
     except Exception as exc:
-        import traceback
         print(f"\n[!] Error: {exc}")
         traceback.print_exc()
         sys.exit(1)
